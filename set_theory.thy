@@ -1,11 +1,11 @@
 theory set_theory imports ZFC classical_axioms fol_theorems
 begin
-(* use all *)
-context 
+
+context
   fixes S
   fixes W defines W_def : "W == {x\<in>S. x\<notin>x}"
 begin
-lemma ex_1_2' : " \<not> ( Pow(S) \<subseteq> S )"
+lemma ex_1_2 : " \<not> ( Pow(S) \<subseteq> S )"
   apply (rule notI)
   apply (rule case_split[where P="W\<in>W"])
   apply (rule notE[where P="W\<in>W"])
@@ -37,69 +37,29 @@ lemma ex_1_2' : " \<not> ( Pow(S) \<subseteq> S )"
   done
 end 
 
-lemma l0:"True"
-  apply(rule TrueI)
-  done
-
-context 
-  fixes S
-  fixes W defines W_def : "W == {y. x\<in>S, True }"
-begin
- lemma l1 : "W \<subseteq> 0"
-  apply(unfold subset_def)
-  apply(unfold Ball_def)
-  apply(rule allI)
-  apply(rule impI)
-  apply(unfold W_def)
-  apply(rule mp)
-   prefer 2
-   apply assumption
-(*  apply(rule replacement)
-   apply(unfold  _Replace)
-  replacement:   "(\<forall>x\<in>A. \<forall>y z. P(x,y) \<and> P(x,z) \<longrightarrow> y = z) \<Longrightarrow>
-                         b \<in> PrimReplace(A,P) \<longleftrightarrow> (\<exists>x\<in>A. P(x,b))"
-we cannot prove (\<forall>x\<in>A. \<forall>y z.  (%a b. True)(x,y) \<and> (%a b. True)(x,z) \<longrightarrow> y = z)
-// \<langle>x,y\<rangle>\<notin>0, \<langle>x,y\<rangle> \<notin>(x,z)
-*)
-  oops
-end
-
-lemma l2: \<open>(\<lambda>a b. True)(x,z)\<close>
-  apply(rule TrueI)
-  done
-
-lemma l3: \<open>S \<subseteq>  {b . a \<in> S, a = b}\<close>
-  (* subsetI *)
-  apply(unfold subset_def)
-  apply(unfold Ball_def)
-  apply(rule allI) (* intro *) 
-  apply(rule impI) (* intro *)
+lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
+  apply(rule subsetI)
   apply(rule iffD2)
-
   (* apply(unfold Replace_def)
-   apply(rule replacement)*)
-                        
-   apply(rule Replace_iff)        
+   apply(rule replacement) *)
+   apply(rule Replace_iff)
   apply(unfold Bex_def)
-  (* ?  apply(rule exI[where x=x])*)
+  (* How to specify metavariable with bounded variable?
+     apply(rule exI[where x=x])  [of _ x]*)
   apply(rule exI)
   apply(rule conjI)
-  (* HOWTO instantiate ?x8(x):=x *)
+  (* How to instantiate ?x8(x):=x  ? *)
   apply assumption
   apply(rule conjI) (* = split.*)
   apply(rule refl)
   apply(auto)
   done
 
+(* original theorem has no name, so... *)
 lemma l4_1:  \<open>P \<longleftrightarrow> P \<and> True\<close>
   apply auto
   done
 
-lemma collect_is_subset: \<open>{a \<in> S . A} \<subseteq> S\<close>
-  apply(rule subsetI)
-  apply(rule CollectD1)
-  apply assumption
-  done
 
 lemma l4: \<open>S = {a \<in> S. True}\<close>
   apply(rule iffD2)
@@ -113,15 +73,94 @@ lemma l4: \<open>S = {a \<in> S. True}\<close>
     apply(rule l4_1)
   apply(rule l3)
   apply(fold Collect_def)
-  apply(rule collect_is_subset)
+  apply(rule Collect_subset)
   done
 
-(* CollectD1
-  apply(rule conj_simps)
-\<open>P \<and> True \<longleftrightarrow> P\<close>)
- \<open>P \<and> True \<longleftrightarrow> P\<close>
- True
-  apply(rule RepFun_cong)
-  apply(rule Collect_cong) *)
+definition Ind :: "i\<Rightarrow>o"
+  where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
+
+lemma exmpl : "Ind(Inf)"
+  apply(unfold Ind_def, rule infinity)
+  done
+
+lemma ex1_3:
+  fixes x
+  assumes a:"Ind(x)"
+  shows "Ind({y\<in>x. y\<subseteq>x})"
+proof -
+  from a
+  have b: "0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
+    by (unfold Ind_def)
+  from b
+  have c1:"0 \<in> x" and c2:"(\<forall>y\<in>x. succ(y) \<in> x)"
+    by (rule conjunct1, rule conjunct2)
+  from c1
+  have d:"0 \<in> {y \<in> x . y \<subseteq> x}"
+    apply(rule CollectI)
+    apply(rule empty_subsetI)
+    done
+  from c1 and c2
+  have e:"(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})"
+    apply(unfold Ball_def)
+    apply(rule allI, rule impI)
+  proof -
+    fix k::"i"
+    assume f: "0 \<in> x"
+     and g:\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
+     and h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
+    show i:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+    proof -
+      from h
+      have h1:"k \<in> x" and h2:"k\<subseteq>x"
+        apply(rule CollectD1[where A="x"])
+        apply(rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
+        apply(rule h)
+        done
+      from h1 and h2
+      have ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+        apply(unfold succ_def)
+        apply(fold succ_def)
+        apply(rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
+         apply(rule mp)
+          apply(rule spec[where x="k"])
+          apply(rule g)
+         apply assumption
+        apply(rule subsetI)
+      proof -
+        fix m::i
+        assume ff: "k \<in> x"
+        and gg: "k \<subseteq> x"
+        and hh: \<open>m \<in> succ(k)\<close>
+        show ii:"m \<in> x"
+        proof -
+          from hh
+          have hh: "m \<in> cons(k, k)"
+            by (unfold succ_def)
+          from hh
+          have hh: "m \<in> Upair(k,k) \<union> k"
+            by (unfold cons_def)
+          from hh
+          have hh: "m \<in> Upair(k,k) \<or> m \<in> k"
+            apply (unfold Un_def)
+            sorry
+          from ff and gg and hh show "m \<in> x"
+            sorry
+        qed
+      qed
+      from ik
+      show "succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+        apply(unfold succ_def)
+        apply(fold succ_def)
+        apply (rule ik)
+        done
+    qed
+  qed
+  show "Ind({y \<in> x . y \<subseteq> x})"
+    apply(unfold Ind_def)
+    apply(rule conjI)
+     apply(rule d)
+    apply(rule e)
+    done
+qed
 
 end
