@@ -1,4 +1,5 @@
 theory empty imports Pure
+keywords "mytypedecl" :: thy_decl
 begin
 
 (*
@@ -16,7 +17,15 @@ ML_file \<open>~~/src/Tools/atomize_elim.ML\<close>
 *)
 
 subsection \<open>FOL: Language, axioms and rules\<close>
-typedecl o
+ML\<open>Typedecl.typedecl {final=true}\<close>
+ML\<open>val _ =
+  Outer_Syntax.local_theory \<^command_keyword>\<open>mytypedecl\<close> "my type declaration"
+    (Parse.type_args -- Parse.binding -- Parse.opt_mixfix
+      >> (fn ((args, a), mx) =>
+          Typedecl.typedecl {final = true} (a, map (rpair dummyS) args, mx) #> snd));
+\<close>
+
+mytypedecl o
 
 judgment
   Trueprop :: \<open>o \<Rightarrow> prop\<close>  (\<open>(_)\<close> 5)
@@ -127,6 +136,42 @@ lemma axB2: \<open>(\<forall>x. (S(x) \<longrightarrow> R)) \<longrightarrow> ((
   apply (rule spec)
   apply assumption
   done
+
+(*
+lemma exE: \<open>\<exists>x. P x \<Longrightarrow> (\<And>x. P x \<Longrightarrow> Q) \<Longrightarrow> Q \<close>
+proof
+  assume x:"\<exists>x. P x"
+  show "(\<And>x. P x \<Longrightarrow> Q) \<Longrightarrow> Q"
+    apply fact
+    done
+qed*)
+
+context 
+  assumes p:"\<exists>x. P x"
+  assumes r:"(\<And>x. P x \<Longrightarrow> Q)"
+(*  fixes W defines W_def : "W == {x\<in>S. x\<notin>x}"*)
+begin
+lemma ll : \<open>(\<forall>x. (R(x) \<longrightarrow> Q))\<close>
+   apply(rule gen)
+   apply(rule ded)
+  apply(rule r)
+  apply assumption
+  done
+lemma exE : \<open>Q\<close>
+  apply(rule r)
+
+  apply(rule mp)
+   apply(rule mp)
+  apply(rule axB2)
+   apply(rule ll)
+   apply(rule p)
+  done
+(*terrm exE, prop exE*)
+end
+
+print_theorems
+print_statement exE
+
 
 subsection \<open>ZFC: Language, axioms and rules\<close>
 

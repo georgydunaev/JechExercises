@@ -1,10 +1,10 @@
 theory set_theory imports ZFC classical_axioms fol_theorems
 begin
-
 context
   fixes S
   fixes W defines W_def : "W == {x\<in>S. x\<notin>x}"
 begin
+
 lemma ex_1_2 : " \<not> ( Pow(S) \<subseteq> S )"
   apply (rule notI)
   apply (rule case_split[where P="W\<in>W"])
@@ -24,16 +24,14 @@ lemma ex_1_2 : " \<not> ( Pow(S) \<subseteq> S )"
    apply (unfold subset_def)
    apply (unfold Ball_def)
     apply (rule mp[where P="W\<in>Pow(S)"])
-     apply (rule spec[where x=W])
-     apply assumption
+     apply (erule spec[where x=W])
     apply (rule PowI)
     apply (unfold W_def)
     apply (unfold subset_def)
     apply (unfold Ball_def)
     apply (rule allI)
     apply (rule impI)
-    apply (rule CollectD1)
-    apply assumption
+    apply (erule CollectD1)
   done
 end 
 
@@ -90,7 +88,7 @@ lemma ex1_3:
 proof -
   from a
   have b: "0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
-    by (unfold Ind_def)
+  proof (unfold Ind_def) qed
   from b
   have c1:"0 \<in> x" and c2:"(\<forall>y\<in>x. succ(y) \<in> x)"
     by (rule conjunct1, rule conjunct2)
@@ -142,16 +140,38 @@ proof -
           from hh
           have hh: "m \<in> Upair(k,k) \<or> m \<in> k"
             apply (unfold Un_def)
-            sorry
+            apply (erule UnionE)
+            apply (erule UpairE)
+             apply(rule disjI1)
+             apply(erule subst)
+             apply assumption
+             apply(rule disjI2)
+             apply(erule subst)
+            apply assumption
+            done
           from ff and gg and hh show "m \<in> x"
-            sorry
+          proof -
+            show ghj:"k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
+              apply(erule disjE)
+               apply (erule UpairE)
+                (*apply(rule subst[where P = "\<lambda>m. m\<in>x"])
+                 apply(rule sym)*)
+              apply(erule subst_elem)
+                 apply assumption
+               apply(erule subst_elem)
+                apply assumption
+(* subst_elem *)
+              apply(erule subsetD)
+              apply assumption
+              done
+          qed
         qed
       qed
       from ik
       show "succ(k) \<in> {y \<in> x . y \<subseteq> x}"
         apply(unfold succ_def)
         apply(fold succ_def)
-        apply (rule ik)
+        apply(rule ik)
         done
     qed
   qed
