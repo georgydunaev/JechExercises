@@ -294,5 +294,36 @@ lemma uio : \<open>IsTransClass(Nat)\<close>
   apply (unfold Ind_def)
   oops
 
+lemma TheE : "\<And>x. P(x) \<Longrightarrow> x\<in>The(P)"
+  apply (unfold the_def)
+  apply(rule UnionI)
+   apply(rule ReplaceI)
+     apply assumption
+  oops
+
+definition NatNumb :: \<open>(i\<Rightarrow>o)\<close>
+  where NatNumb_def : "NatNumb(x) == \<forall> y. Nat(y) \<longleftrightarrow> y\<in>x"
+
+lemma NatInInf: "\<And>x. Nat(x) \<Longrightarrow> x \<in> Inf"
+  apply (unfold Nat_def)
+  apply (unfold ClassInter_def)
+  apply(rule mp)
+   apply(erule spec)
+  apply (rule Ind_Inf)
+  done
+
+lemma NatI : "\<And>x. Nat(x) \<Longrightarrow> x\<in>The(NatNumb)"
+  apply (unfold the_def)
+  apply(rule UnionI)
+   apply(rule ReplaceI)
+     prefer 4
+     apply(erule NatInInf)
+
+     apply assumption
+  oops
+
+
+lemma NatIsInd2: "Ind(The(Nat))"
+  oops
 
 end
