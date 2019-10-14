@@ -37,20 +37,21 @@ end
 
 lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
   apply(rule subsetI)
-  apply(rule iffD2)
+  apply(rule ReplaceI)
+  (*apply(rule iffD2)
   (* apply(unfold Replace_def)
    apply(rule replacement) *)
-   apply(rule Replace_iff)
+   apply(rule Replace_iff)*
   apply(unfold Bex_def)
   (* How to specify metavariable with bounded variable?
      apply(rule exI[where x=x])  [of _ x]*)
   apply(rule exI)
-  apply(rule conjI)
+  apply(erule conjI)
   (* How to instantiate ?x8(x):=x  ? *)
-  apply assumption
-  apply(rule conjI) (* = split.*)
-  apply(rule refl)
-  apply(auto)
+  apply(rule conjI) (* = split.*)*)
+    apply(rule refl)
+   apply assumption
+  apply(erule sym)
   done
 
 (* original theorem has no name, so... *)
@@ -60,9 +61,10 @@ lemma l4_1:  \<open>P \<longleftrightarrow> P \<and> True\<close>
 
 
 lemma l4: \<open>S = {a \<in> S. True}\<close>
-  apply(rule iffD2)
+  (* apply(rule iffD2)
   apply(rule extension)
-  apply(rule conjI)
+  apply(rule conjI) *)
+  apply(rule equalityI)
   apply(unfold Collect_def)
    apply(rule subst)
     apply(rule Replace_cong)
@@ -77,7 +79,7 @@ lemma l4: \<open>S = {a \<in> S. True}\<close>
 definition Ind :: "i\<Rightarrow>o"
   where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
 
-lemma exmpl : "Ind(Inf)"
+lemma Ind_Inf : "Ind(Inf)"
   apply(unfold Ind_def, rule infinity)
   done
 
@@ -182,5 +184,115 @@ proof -
     apply(rule e)
     done
 qed
+
+definition ClassInter :: \<open>(i\<Rightarrow>o)\<Rightarrow>(i\<Rightarrow>o)\<close> (*\<open>[ i \<Rightarrow> o, i ] \<Rightarrow> o\<close>*)
+  where ClassInter_def : "ClassInter(P,x) == \<forall>y. P(y) \<longrightarrow> x\<in>y"
+
+definition Nat :: \<open>i\<Rightarrow>o\<close>
+  where "Nat == ClassInter(Ind)"
+
+(*lemma Ind_Inf : "Ind(Inf)"
+  apply(unfold Ind_def, rule infinity)
+  done*)
+
+lemma lwe : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
+  apply(unfold Nat_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply(unfold ClassInter_def)
+  apply(rule mp)
+   apply(erule spec)
+  apply(rule Ind_Inf)
+  done
+
+(*lemma : "Nat"*)
+
+
+definition IsTransClass :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
+  where IsTransClass_def : "IsTransClass(P) == \<forall>y. P(y) \<longrightarrow> (\<forall>z. z\<in>y \<longrightarrow> P(z))"
+
+definition IsIndClass :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
+  where IsIndClass_def : "IsIndClass(P) == P(0) \<and> (\<forall>y. P(y) \<longrightarrow> P(succ(y)))"
+
+definition IsSet :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
+  where IsSet_def : "IsSet(P) == \<exists> y. \<forall> z. z \<in> y \<longleftrightarrow> P(z)"
+
+lemma Nat0 : "Nat(0)"
+  apply (unfold Nat_def)
+  apply (unfold ClassInter_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply (unfold Ind_def)
+  apply(rule conjE)
+   apply assumption
+  apply assumption
+  done
+
+lemma NatSu:
+  fixes x w
+  assumes a:"\<forall>y. Ind(y) \<longrightarrow> x \<in> y"
+  assumes b:"Ind(w)"
+  shows "succ(x) \<in> w"
+proof -
+  from b
+  have b': "\<forall>y. y\<in>w \<longrightarrow> succ(y) \<in> w"
+    apply(unfold Ind_def)
+    apply(rule allI)
+    apply(rule impI)
+    apply(rule  bspec[where P="%y. succ(y) \<in> w"])
+     apply(erule conjunct2)
+    apply(assumption)
+    done
+  from a b' b
+  show c': "succ(x) \<in> w"
+    apply(unfold Ind_def)
+    apply(rule mp)
+     apply(erule spec)
+    apply(fold Ind_def)
+    apply(rule mp)
+     apply(erule spec)
+    apply(unfold Ind_def)
+
+    apply(rule conjI)
+    prefer 2
+     apply(rule ballI)
+     apply(rule mp)
+      apply(erule spec)
+     apply(assumption)
+    apply(erule conjunct1)
+    done
+qed
+
+lemma NatSucc : "\<forall> x. Nat(x) \<longrightarrow> Nat(succ(x))"
+  apply (unfold Nat_def)
+  apply (unfold ClassInter_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply(rule allI)
+  apply(rule impI)
+  apply(erule NatSu)
+  apply assumption
+  done
+
+lemma NatIsInd : \<open>IsIndClass(Nat)\<close>
+  apply (unfold IsIndClass_def)
+  apply (rule conjI)
+   apply (rule Nat0)
+  apply (rule NatSucc)
+  done
+
+lemma uio : \<open>IsTransClass(Nat)\<close>
+  apply (unfold IsTransClass_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply(rule allI)
+  apply(rule impI)
+  apply (unfold Nat_def)
+  apply (unfold ClassInter_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply (unfold Ind_def)
+  oops
+
 
 end
