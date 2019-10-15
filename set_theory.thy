@@ -79,7 +79,7 @@ lemma l4: \<open>S = {a \<in> S. True}\<close>
 definition Ind :: "i\<Rightarrow>o"
   where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
 
-lemma Ind_Inf : "Ind(Inf)"
+lemma IndInf : "Ind(Inf)"
   apply(unfold Ind_def, rule infinity)
   done
 
@@ -191,7 +191,7 @@ definition ClassInter :: \<open>(i\<Rightarrow>o)\<Rightarrow>(i\<Rightarrow>o)\
 definition Nat :: \<open>i\<Rightarrow>o\<close>
   where "Nat == ClassInter(Ind)"
 
-(*lemma Ind_Inf : "Ind(Inf)"
+(*lemma IndInf : "Ind(Inf)"
   apply(unfold Ind_def, rule infinity)
   done*)
 
@@ -202,11 +202,8 @@ lemma lwe : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
   apply(unfold ClassInter_def)
   apply(rule mp)
    apply(erule spec)
-  apply(rule Ind_Inf)
+  apply(rule IndInf)
   done
-
-(*lemma : "Nat"*)
-
 
 definition IsTransClass :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
   where IsTransClass_def : "IsTransClass(P) == \<forall>y. P(y) \<longrightarrow> (\<forall>z. z\<in>y \<longrightarrow> P(z))"
@@ -294,36 +291,111 @@ lemma uio : \<open>IsTransClass(Nat)\<close>
   apply (unfold Ind_def)
   oops
 
-lemma TheE : "\<And>x. P(x) \<Longrightarrow> x\<in>The(P)"
-  apply (unfold the_def)
-  apply(rule UnionI)
-   apply(rule ReplaceI)
-     apply assumption
-  oops
+lemma ex1ex : "(\<exists>!x. P(x)) \<Longrightarrow> (\<exists>x. P(x))"
+  apply (erule ex1E)
+  apply (erule exI)
+  done
 
-definition NatNumb :: \<open>(i\<Rightarrow>o)\<close>
-  where NatNumb_def : "NatNumb(x) == \<forall> y. Nat(y) \<longleftrightarrow> y\<in>x"
+lemma TheE : "\<And>x. (\<exists>!w. P(w)) \<Longrightarrow> P(x) \<Longrightarrow> x=The(P)"
+  apply (rule sym)
+  apply (erule upair.the_equality2)
+  apply assumption
+  done
+
+(* "is a superset of the natural numbers" predicate *)
+definition SuperNatNumb :: \<open>(i\<Rightarrow>o)\<close>
+  where SuperNatNumb_def : "SuperNatNumb(x) == \<forall> y. Nat(y) \<longrightarrow> y\<in>x"
 
 lemma NatInInf: "\<And>x. Nat(x) \<Longrightarrow> x \<in> Inf"
   apply (unfold Nat_def)
   apply (unfold ClassInter_def)
   apply(rule mp)
    apply(erule spec)
-  apply (rule Ind_Inf)
+  apply (rule IndInf)
   done
 
-lemma NatI : "\<And>x. Nat(x) \<Longrightarrow> x\<in>The(NatNumb)"
+lemma SuperNatNumbInf : "SuperNatNumb(Inf)"
+  apply (unfold SuperNatNumb_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply(erule NatInInf)
+  done
+
+definition Omega :: \<open>i\<close>
+  where Omega_def : "Omega == { y \<in> Inf . Nat(y) }"
+
+lemma NatSubOmega : "\<And>x. Nat(x) \<Longrightarrow> x \<in> Omega"
+  apply (unfold Omega_def)
+  apply (rule CollectI)
+   apply (erule NatInInf)
+  apply assumption
+  done
+
+lemma ExInf : \<open>\<exists>x. Ind(x)\<close>
+  apply(rule exI)
+  apply(rule IndInf)
+  done
+
+lemma IndOmega : \<open>Ind(Omega)\<close>
+  sorry
+
+(* Some facts are about logic, not about ordered pairs.
+Some are about relations which are set. 
+It would be good to separate these cases.*)
+definition ReflRel :: \<open>(i=>i=>o)=>o\<close>
+  where ReflRel_def : "ReflRel(P) == \<forall>x. P(x,x)"
+definition SymRel :: \<open>(i=>i=>o)=>o\<close>
+  where SymRel_def : "SymRel(P) == \<forall>x. \<forall>y. P(x,y) \<longrightarrow> P(y,x)"
+definition TransRel :: \<open>(i=>i=>o)=>o\<close>
+  where TransRel_def : "TransRel(P) ==
+ \<forall>x y z. P(x,y) \<and> P(y, z) \<longrightarrow> P(x,z)"
+
+definition uncarry :: \<open>(i=>i=>o)=>(i=>o)\<close>
+  where uncarry_def : "uncarry(P,p) == P(fst(p),snd(p))"
+definition carry :: \<open>(i\<Rightarrow>o) \<Rightarrow> (i\<Rightarrow>i\<Rightarrow>o)\<close>
+  where carry_def : "carry(P,x,y) == P(<x,y>)"
+
+
+definition Pres :: \<open>(i\<Rightarrow>i\<Rightarrow>o) \<Rightarrow>(i\<Rightarrow>i\<Rightarrow>o) \<Rightarrow>(i\<Rightarrow>i) \<Rightarrow> o\<close>
+  where "Pres(A,B,f) == \<forall>a0 a1. A(a0,a1)\<longrightarrow>B(f(a0),f(a1))"
+
+definition tofun :: \<open>i \<Rightarrow> (i\<Rightarrow>i)\<close>
+  where "tofun(f,x) == f`x"
+
+
+(* transitive closure*)
+(*
+definition TrCl :: \<open>(i\<Rightarrow>i\<Rightarrow>o) \<Rightarrow> (i\<Rightarrow>i\<Rightarrow>o)\<close>
+  where "TrCl(P,a,b) ==
+ \<exists>\<alpha>. Ord(\<alpha>) \<and> (\<exists>f. fun(f) & dom(f) = \<alpha> & Pres(mem,P, \<lambda>x. f`x))"
+*)
+(* todo: translate statement from HOL to ZF *)
+(* every proper initial segment of ordinals is a set *)
+
+(* There exists subset-minimal inductive set. *)
+lemma ExMinInd : \<open>\<exists>!x. ( Ind(x) \<and> (\<forall>y. Ind(y) \<longrightarrow> x\<subseteq>y) )\<close>
+  apply(rule ex_ex1I)
+   apply(rule exI)
+   apply(rule conjI)
+    apply(rule IndOmega)
+  sorry
+
+(*If there exists two subset-minimal sets  the they are equal.*)
+
+
+lemma NatI : "\<And>x. Nat(x) \<Longrightarrow> x\<in>The(SuperNatNumb)"
   apply (unfold the_def)
   apply(rule UnionI)
    apply(rule ReplaceI)
-     prefer 4
-     apply(erule NatInInf)
+  prefer 4
+(*     apply(erule NatInInf) wrong!
+    apply(rule SuperNatNumbInf)
 
-     apply assumption
+     apply assumption *)
   oops
 
 
-lemma NatIsInd2: "Ind(The(Nat))"
+lemma NatIsInd2: "omega = nat"
   oops
 
 end

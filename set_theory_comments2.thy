@@ -81,3 +81,39 @@ definition subcl :: \<open>'a \<Rightarrow>'a \<Rightarrow>o\<close>
 (*lemma \<And>x y. \<forall>y. Ind(y) \<longrightarrow> x \<in> y \<Longrightarrow>
            Ind(y) \<Longrightarrow> succ(x) \<in> y*)
 *)
+
+
+
+---------------------
+
+(*  apply (rule ex1_equalsE)
+    apply assumption 
+  apply (rule equalityI)
+   prefer 2
+proof -
+  have "⋀x. ∃!w. P(w) ⟹ P(x) ⟹ The(P) ⊆ x"
+    apply (rule subsetI)
+    apply (unfold the_def)
+    apply(erule UnionE)
+   apply(erule ReplaceE)
+    
+    
+    apply(rule mp)
+apply(rule spec)
+
+  qed*)
+
+(*  apply (unfold the_def)
+  apply(rule UnionI)
+   apply(rule ReplaceI)
+     apply (rule exE)
+      apply (rule ex1ex)
+      apply assumption
+  oops*)
+
+lemma wrongNatInInf: "⋀x. x ∈ Inf ⟹ Nat(x)"
+  apply (unfold Nat_def)
+  apply (unfold ClassInter_def)
+  apply(rule allI)
+  apply(rule impI)
+  oops (* lemma is false *)
