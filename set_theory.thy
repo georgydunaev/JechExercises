@@ -54,7 +54,7 @@ lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
   apply(erule sym)
   done
 
-(* original theorem has no name, so... *)
+(* original theorem has no name, so I had to prove it... *)
 lemma l4_1:  \<open>P \<longleftrightarrow> P \<and> True\<close>
   apply auto
   done
@@ -373,6 +373,93 @@ definition TrCl :: \<open>(i\<Rightarrow>i\<Rightarrow>o) \<Rightarrow> (i\<Righ
 (* every proper initial segment of ordinals is a set *)
 
 (* There exists subset-minimal inductive set. *)
+
+definition Irr :: \<open>(i=>i=>o)=>o\<close>
+  where Irr_def : "Irr(P) == \<forall>x. \<not>P(x,x)"
+
+definition AntiSym :: \<open>(i=>i=>o)=>o\<close>
+  where AntiSym_def : "AntiSym(P) == \<forall>x. \<forall>y. P(x,y) \<and> P(y,x) \<longrightarrow> x=y"
+
+definition SPO :: \<open>(i=>i=>o)=>o\<close>
+  where SPO_def : "SPO(R) == Irr(R)\<and>AntiSym(R)\<and>TransRel(R)"
+
+(* partial order *)
+definition PO :: \<open>(i=>i=>o)=>o\<close>
+  where PO_def : "PO(R) == ReflRel(R)\<and>AntiSym(R)\<and>TransRel(R)"
+
+(* how to fold something as ... *)
+lemma SPO2PO : \<open>SPO(R) \<Longrightarrow> PO(\<lambda>x y.(R(x,y)\<or>x=y))\<close>
+  apply(unfold PO_def)
+  apply(rule conjI)
+proof -
+  have qki:"SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"
+    apply(unfold ReflRel_def)
+    apply auto (*  apply (rule allI) *)
+    done 
+(*  with qki show ?thesis
+  from qki show "SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y"
+from qki show "SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"
+    apply(unfold ReflRel)
+    by qki
+
+  apply assumption
+  qed*)
+  oops
+
+(* use of LEM *)
+lemma PO2SPO : \<open>PO(R) \<Longrightarrow> SPO(\<lambda>x y.(R(x,y)\<and>x\<noteq>y))\<close>
+  oops
+
+(* equivalence relation *)
+definition ER :: \<open>(i=>i=>o)=>o\<close>
+  where ER_def : "ER(R) == ReflRel(R)\<and>SymRel(R)\<and>TransRel(R)"
+
+definition IsWeakMin :: \<open>(i=>i=>o)=>i\<Rightarrow>o\<close>
+  where IsWeakMin_def : "IsWeakMin(R,x) == \<forall>y. (R(x,y) \<or> x=y)"
+
+definition IsMin :: \<open>(i=>i=>o)=>i\<Rightarrow>o\<close>
+  where IsMin_def : "IsMin(R,x) == \<forall>y. R(x,y)"
+
+lemma WeakMinIsOnlyOne : \<open>AntiSym(R) \<Longrightarrow> \<exists>x. IsWeakMin(R,x) \<Longrightarrow> \<exists>!x. IsWeakMin(R,x)\<close>
+  apply(erule ex_ex1I)
+  apply(unfold IsWeakMin_def)
+
+  apply(rule disjE)
+   apply(erule spec)
+  prefer 2 apply assumption
+
+  apply(rule sym)
+  apply(rule disjE) (*[where Q="y=x"]*)
+    apply(rule spec)
+    prefer 3    apply assumption
+   apply assumption
+  apply(fold IsWeakMin_def)
+
+  apply(unfold AntiSym_def)
+  apply(rule mp)
+   apply(rule spec)
+   apply(rule spec)
+   apply assumption
+  apply(rule conjI)
+   apply assumption
+  apply assumption
+  done
+
+lemma MinIsOnlyOne : \<open>AntiSym(R) \<Longrightarrow> \<exists>x. IsMin(R,x) \<Longrightarrow> \<exists>!x. IsMin(R,x)\<close>
+  apply(erule ex_ex1I)
+  apply(unfold IsMin_def)
+  apply(unfold AntiSym_def)
+  apply(rule mp)
+   apply(rule spec)
+   apply(rule spec)
+   apply assumption
+  apply(rule conjI)
+  apply(erule spec)
+  apply(erule spec)
+  done
+
+(*lemma IndPO*)
+
 lemma ExMinInd : \<open>\<exists>!x. ( Ind(x) \<and> (\<forall>y. Ind(y) \<longrightarrow> x\<subseteq>y) )\<close>
   apply(rule ex_ex1I)
    apply(rule exI)
