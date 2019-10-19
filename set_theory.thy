@@ -64,52 +64,22 @@ proof (rule notI)
     proof (rule notE[where P="W\<in>W"])
       show \<open>W \<notin> W\<close> by (rule y)
     next
-      show \<open>W \<in> W\<close>
-      proof (unfold W_def)          
-        show \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close>
+      have \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close>
         proof (rule CollectI)
           from \<open>W \<notin> W\<close>
           show \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close> by (fold W_def)
         next
-          have \<open>\<And>x. x \<in> {x \<in> S . x \<notin> x} \<Longrightarrow> x \<in> S\<close> by (rule CollectD1)
-          hence \<open>\<And>x. x \<in> {x \<in> S . x \<notin> x} \<longrightarrow> x \<in> S\<close> by (rule impI)
-          hence \<open>\<forall>x. x \<in> {x \<in> S . x \<notin> x} \<longrightarrow> x \<in> S\<close> by (rule allI)
-          hence \<open>\<forall>x\<in>{x \<in> S . x \<notin> x}. x \<in> S\<close> by (unfold Ball_def)
-          hence \<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (unfold subset_def)
+          from CollectD1 have\<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (rule subsetI)
           hence \<open>W \<subseteq> S\<close> by (unfold W_def)
           hence b0:\<open>W \<in> Pow(S)\<close> by (rule PowI)
           from i have i':\<open>W \<in> Pow(S) \<longrightarrow> W \<in> S\<close> by (rule spec[where x=W])
           from i' and b0 have w:\<open>W \<in> S\<close> by (rule mp[where P="W\<in>Pow(S)"])
           then show \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (fold W_def)
         qed
-      qed
+      then show \<open>W \<in> W\<close> by (unfold W_def)
     qed
   qed
 qed
-
-(*
-         from j have \<open>W \<in> S\<close>
-            
-            apply (unfold subset_def)
-            apply (unfold Ball_def)
-
-            apply (rule mp[where P="W\<in>Pow(S)"])
-             apply (erule spec[where x=W])
-            apply (erule b0)
- 
-*)
-(*          next
-       prefer 2
-       apply (rule y)(*assumption*)
-          show \<open>W \<notin> W\<close> by (rule y)
-
-        next
-*)
-
-      (*apply (unfold W_def)*)
-
-  (*subgoal*)
-(*      have \<open>W \<notin> W \<Longrightarrow> W \<in> S\<close>*)
 
 theorem Drinker's_Principle: "\<exists>x. drunk(x) \<longrightarrow> (\<forall>x. drunk(x))"
 proof cases
