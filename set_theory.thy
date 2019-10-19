@@ -1,11 +1,39 @@
 theory set_theory imports ZFC classical_axioms fol_theorems
 begin
+
+(* New words:
+cut_tac; with; (best dest: equalityD2);
+*)
+
+
 context
   fixes S
   fixes W defines W_def : "W == {x\<in>S. x\<notin>x}"
 begin
 
-lemma ex_1_2 : " \<not> ( Pow(S) \<subseteq> S )"
+lemma WinW : \<open>W \<in> W \<Longrightarrow> False\<close>
+proof (rule notE[where P="W\<in>W"])
+  assume y:\<open>W \<in> W\<close>
+  show \<open>W \<notin> W\<close>
+  proof -
+  (*show \<open>W \<in> W \<Longrightarrow> W \<notin> W\<close>*)
+    from y have \<open>W \<in> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
+    then show \<open>W \<notin> W\<close> by (rule CollectD2[where A=S])
+  qed
+next
+(*  assume q:\<open>W \<in> W\<close>
+  show \<open>W \<in> W\<close> by (rule q)*)
+  show \<open>W \<in> W \<Longrightarrow> W \<in> W\<close> by assumption
+qed
+(*  apply (rule notE[where P="W\<in>W"])
+   apply (rule CollectD2[where A=S])
+   apply (fold W_def)
+   apply assumption
+  apply assumption
+  done*)
+
+
+lemma ex_1_2 : "\<not> ( Pow(S) \<subseteq> S )"
   apply (rule notI)
   apply (rule case_split[where P="W\<in>W"])
   apply (rule notE[where P="W\<in>W"])
@@ -33,7 +61,65 @@ lemma ex_1_2 : " \<not> ( Pow(S) \<subseteq> S )"
     apply (rule impI)
     apply (erule CollectD1)
   done
-end 
+
+lemma ex_1_2' : \<open>\<not> ( Pow(S) \<subseteq> S )\<close>
+proof (rule notI)
+  assume j:\<open>Pow(S) \<subseteq> S\<close>
+  show \<open>False\<close>
+  proof (rule case_split[where P="W\<in>W"])
+    show \<open>W \<in> W \<Longrightarrow> False\<close>
+      apply (rule notE[where P="W\<in>W"])
+       apply (rule CollectD2[where A=S])
+       apply (fold W_def)
+      apply assumption
+      apply assumption
+      done
+  next
+    show \<open>W \<notin> W \<Longrightarrow> False\<close>
+      apply (rule notE[where P="W\<in>W"])
+       apply assumption
+      apply (unfold W_def)
+      apply (rule CollectI)
+       apply (fold W_def)
+       prefer 2
+       apply assumption
+
+      (*apply (unfold W_def)*)
+
+  (*subgoal*)
+(*      have \<open>W \<notin> W \<Longrightarrow> W \<in> S\<close>*)
+   apply (unfold subset_def)
+   apply (unfold Ball_def)
+    apply (rule mp[where P="W\<in>Pow(S)"])
+     apply (erule spec[where x=W])
+    apply (rule PowI)
+    apply (unfold W_def)
+    apply (unfold subset_def)
+    apply (unfold Ball_def)
+    apply (rule allI)
+    apply (rule impI)
+    apply (erule CollectD1)
+      done
+qed
+
+theorem Drinker's_Principle: "\<exists>x. drunk(x) \<longrightarrow> (\<forall>x. drunk(x))"
+proof cases
+  assume "\<forall>x. drunk(x)"
+  then have "drunk(a) \<longrightarrow> (\<forall>x. drunk(x))" for a ..
+  then show ?thesis ..
+next
+  assume "\<not> (\<forall>x. drunk(x))"
+  then have "\<exists>x. \<not> drunk(x)" by (rule de_Morgan)
+  then obtain a where "\<not> drunk(a)" ..
+  have "drunk(a) \<longrightarrow> (\<forall>x. drunk(x))"
+  proof
+    assume "drunk(a)"
+    with \<open>\<not> drunk(a)\<close> show "\<forall>x. drunk(x)" by contradiction
+  qed
+  then show ?thesis ..
+qed
+
+end
 
 lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
   apply(rule subsetI)
@@ -99,8 +185,7 @@ lemma ex1_3:
 proof -
   from a
   have "0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)" by (unfold Ind_def)
-  hence c1:"0 \<in> x" and c2:"(\<forall>y\<in>x. succ(y) \<in> x)"
-    by (rule conjunct1, rule conjunct2)
+  hence c1:"0 \<in> x" and c2:"(\<forall>y\<in>x. succ(y) \<in> x)" by (rule conjunct1, rule conjunct2)
   from c1 have d:"0 \<in> {y \<in> x . y \<subseteq> x}"
     apply(rule CollectI)
     apply(rule empty_subsetI)
@@ -236,7 +321,8 @@ qed
 
 lemma zeroisempty : \<open>\<forall>x. \<not> x \<in> 0\<close>
   apply(rule allI)
-  oops
+  apply(rule not_mem_empty)
+  done
 
 lemma NatSu:
   fixes x w
