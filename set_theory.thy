@@ -83,12 +83,12 @@ proof (rule notI)
             apply (unfold Ball_def)
             apply assumption
             done
-          from j have \<open>W \<in> S\<close>
-            apply (unfold subset_def)
-            apply (unfold Ball_def)
+          have \<open>W \<in> S\<close>
             apply (rule mp[where P="W\<in>Pow(S)"])
-             apply (erule spec[where x=W])
-            apply (erule b0)
+             apply (rule spec[where x=W])
+            apply (rule i)
+            apply (rule b0)
+            apply (rule i)
             done
           then show \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (fold W_def)
         qed
@@ -97,6 +97,17 @@ proof (rule notI)
   qed
 qed
 
+(*
+         from j have \<open>W \<in> S\<close>
+            
+            apply (unfold subset_def)
+            apply (unfold Ball_def)
+
+            apply (rule mp[where P="W\<in>Pow(S)"])
+             apply (erule spec[where x=W])
+            apply (erule b0)
+ 
+*)
 (*          next
        prefer 2
        apply (rule y)(*assumption*)
