@@ -11,13 +11,14 @@ context
   fixes W defines W_def : "W == {x\<in>S. x\<notin>x}"
 begin
 
-lemma WinW : \<open>W \<in> W \<Longrightarrow> False\<close>
+lemma WinW :
+  assumes y:\<open>W \<in> W\<close> 
+  shows \<open>False\<close>
 proof (rule notE[where P="W\<in>W"])
-  assume y:\<open>W \<in> W\<close>
-  then have \<open>W \<in> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
+  from y have \<open>W \<in> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
   then show \<open>W \<notin> W\<close> by (rule CollectD2[where A=S])
 next
-  show \<open>W \<in> W \<Longrightarrow> W \<in> W\<close> by assumption
+  show \<open>W \<in> W\<close> by (rule y)
 qed
 
 lemma ex_1_2 : "\<not> ( Pow(S) \<subseteq> S )"
@@ -54,40 +55,54 @@ proof (rule notI)
   assume j:\<open>Pow(S) \<subseteq> S\<close>
   show \<open>False\<close>
   proof (rule case_split[where P="W\<in>W"])
-    show \<open>W \<in> W \<Longrightarrow> False\<close>
-      apply (rule notE[where P="W\<in>W"])
-       apply (rule CollectD2[where A=S])
-       apply (fold W_def)
-      apply assumption
-      apply assumption
-      done
+    show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule WinW)
   next
-    show \<open>W \<notin> W \<Longrightarrow> False\<close>
-      apply (rule notE[where P="W\<in>W"])
-       apply assumption
-      apply (unfold W_def)
-      apply (rule CollectI)
-       apply (fold W_def)
+    assume y:\<open>W \<notin> W\<close>
+    show \<open>False\<close>
+    proof (rule notE[where P="W\<in>W"])
+      show \<open>W \<notin> W\<close> by (rule y)(*assumption*)
+    next
+      show \<open>W \<in> W\<close>
+      proof (unfold W_def)          
+        show \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close>
+        proof (rule CollectI)
+          show \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close>
+            apply (fold W_def)
+            apply (rule y)
+            done
+        next
+          from j show \<open>{x \<in> S . x \<notin> x} \<in> S\<close>
+            apply (fold W_def)
+            apply (unfold subset_def)
+            apply (unfold Ball_def)
+            apply (rule mp[where P="W\<in>Pow(S)"])
+             apply (erule spec[where x=W])
+            apply (rule PowI)
+            apply (unfold W_def)
+            apply (unfold subset_def)
+            apply (unfold Ball_def)
+            apply (rule allI)
+            apply (rule impI)
+            apply (erule CollectD1)
+            done
+        qed
+      qed
+    qed
+  qed
+qed
+
+(*          next
        prefer 2
-       apply assumption
+       apply (rule y)(*assumption*)
+          show \<open>W \<notin> W\<close> by (rule y)
+
+        next
+*)
 
       (*apply (unfold W_def)*)
 
   (*subgoal*)
 (*      have \<open>W \<notin> W \<Longrightarrow> W \<in> S\<close>*)
-   apply (unfold subset_def)
-   apply (unfold Ball_def)
-    apply (rule mp[where P="W\<in>Pow(S)"])
-     apply (erule spec[where x=W])
-    apply (rule PowI)
-    apply (unfold W_def)
-    apply (unfold subset_def)
-    apply (unfold Ball_def)
-    apply (rule allI)
-    apply (rule impI)
-    apply (erule CollectD1)
-      done
-qed
 
 theorem Drinker's_Principle: "\<exists>x. drunk(x) \<longrightarrow> (\<forall>x. drunk(x))"
 proof cases
