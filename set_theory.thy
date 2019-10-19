@@ -387,29 +387,6 @@ definition SPO :: \<open>(i=>i=>o)=>o\<close>
 definition PO :: \<open>(i=>i=>o)=>o\<close>
   where PO_def : "PO(R) == ReflRel(R)\<and>AntiSym(R)\<and>TransRel(R)"
 
-(* how to fold something as ... *)
-lemma SPO2PO : \<open>SPO(R) \<Longrightarrow> PO(\<lambda>x y.(R(x,y)\<or>x=y))\<close>
-  apply(unfold PO_def)
-  apply(rule conjI)
-proof -
-  have qki:"SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"
-    apply(unfold ReflRel_def)
-    apply auto (*  apply (rule allI) *)
-    done 
-(*  with qki show ?thesis
-  from qki show "SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y"
-from qki show "SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"
-    apply(unfold ReflRel)
-    by qki
-
-  apply assumption
-  qed*)
-  oops
-
-(* use of LEM *)
-lemma PO2SPO : \<open>PO(R) \<Longrightarrow> SPO(\<lambda>x y.(R(x,y)\<and>x\<noteq>y))\<close>
-  oops
-
 (* equivalence relation *)
 definition ER :: \<open>(i=>i=>o)=>o\<close>
   where ER_def : "ER(R) == ReflRel(R)\<and>SymRel(R)\<and>TransRel(R)"
@@ -484,5 +461,99 @@ lemma NatI : "\<And>x. Nat(x) \<Longrightarrow> x\<in>The(SuperNatNumb)"
 
 lemma NatIsInd2: "omega = nat"
   oops
+
+
+lemma de_Morgan:
+  assumes "\<not> (\<forall>x. P(x))"
+  shows "\<exists>x. \<not> P(x)"
+proof (rule classical)
+  assume "\<not> (\<exists>x. \<not> P(x))"
+  have "\<forall>x. P(x)"
+  proof
+    fix x show "P(x)"
+    proof (rule classical)
+      assume "\<not> P(x)"
+      then have "\<exists>x. \<not> P(x)" ..
+      with \<open>\<not>(\<exists>x. \<not> P(x))\<close> show ?thesis by contradiction
+    qed
+  qed
+  with \<open>\<not> (\<forall>x. P(x))\<close> show ?thesis by contradiction
+qed
+
+theorem Drinker's_Principle: "\<exists>x. drunk(x) \<longrightarrow> (\<forall>x. drunk(x))"
+proof cases
+  assume "\<forall>x. drunk(x)"
+  then have "drunk(a) \<longrightarrow> (\<forall>x. drunk(x))" for a ..
+  then show ?thesis ..
+next
+  assume "\<not> (\<forall>x. drunk(x))"
+  then have "\<exists>x. \<not> drunk(x)" by (rule de_Morgan)
+  then obtain a where "\<not> drunk(a)" ..
+  have "drunk(a) \<longrightarrow> (\<forall>x. drunk(x))"
+  proof
+    assume "drunk(a)"
+    with \<open>\<not> drunk(a)\<close> show "\<forall>x. drunk(x)" by contradiction
+  qed
+  then show ?thesis ..
+qed
+
+lemma lwe2 : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
+  apply(unfold Nat_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply(unfold ClassInter_def)
+  apply(rule mp)
+   apply(erule spec)
+  apply(rule IndInf)
+  done
+
+lemma lwe3 : \<open>\<And>x. Nat(x) \<Longrightarrow> x\<in>Inf\<close>
+proof (unfold Nat_def)
+  fix x
+  assume p0:\<open>ClassInter(Ind, x)\<close>
+  show \<open>x\<in>Inf\<close>
+  proof -
+    from p0 have p1:"\<forall>y. Ind(y) \<longrightarrow> x \<in> y" by (unfold ClassInter_def)
+    from p1 have p2:"Ind(Inf) \<longrightarrow> x \<in> Inf" by (rule spec)
+    from p2 have p3:"Ind(Inf) \<Longrightarrow> x \<in> Inf" by (rule mp)
+    from IndInf show p4:"x \<in> Inf" by (rule p3)
+  qed
+qed
+
+lemma lwe4 : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
+proof (rule allI)
+  fix x
+  from lwe3 show \<open>(Nat(x) \<longrightarrow> x\<in>Inf)\<close> by (rule impI)
+qed
+
+
+(* how to fold something as ... *)
+lemma SPO2PO : \<open>SPO(R) \<Longrightarrow> PO(\<lambda>x y.(R(x,y)\<or>x=y))\<close>
+(*(*apply(unfold PO_def)
+  apply(rule conjI)*)
+proof
+assume "SPO(R)"
+  have qki:"SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"
+  proof
+    apply(unfold ReflRel_def)
+    apply auto (*  apply (rule allI) *)
+    done
+  ..
+(* next by qki*)
+(*  then have "SPO(R) \<Longrightarrow> ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"*)
+    apply(unfold ReflRel_def)
+(*  with qki show ?thesis
+  from qki show "SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y"
+from qki show "SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"
+    apply(unfold ReflRel)
+    by qki
+  apply assumption
+  qed*)*)
+  oops
+
+(* use of LEM *)
+lemma PO2SPO : \<open>PO(R) \<Longrightarrow> SPO(\<lambda>x y.(R(x,y)\<and>x\<noteq>y))\<close>
+  oops
+
 
 end
