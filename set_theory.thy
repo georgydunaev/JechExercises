@@ -66,17 +66,10 @@ proof (rule notI)
       proof (unfold W_def)          
         show \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close>
         proof (rule CollectI)
-          show \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close>
-            apply (fold W_def)
-            apply (rule y)
-            done
+          from \<open>W \<notin> W\<close>
+          show \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close> by (fold W_def)
         next
-          from j show \<open>{x \<in> S . x \<notin> x} \<in> S\<close>
-            apply (fold W_def)
-            apply (unfold subset_def)
-            apply (unfold Ball_def)
-            apply (rule mp[where P="W\<in>Pow(S)"])
-             apply (erule spec[where x=W])
+          have b0:\<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S \<Longrightarrow> W \<in> Pow(S)\<close>
             apply (rule PowI)
             apply (unfold W_def)
             apply (unfold subset_def)
@@ -85,6 +78,19 @@ proof (rule notI)
             apply (rule impI)
             apply (erule CollectD1)
             done
+          from j have i:\<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S\<close>
+            apply (unfold subset_def)
+            apply (unfold Ball_def)
+            apply assumption
+            done
+          from j have \<open>W \<in> S\<close>
+            apply (unfold subset_def)
+            apply (unfold Ball_def)
+            apply (rule mp[where P="W\<in>Pow(S)"])
+             apply (erule spec[where x=W])
+            apply (erule b0)
+            done
+          then show \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (fold W_def)
         qed
       qed
     qed
