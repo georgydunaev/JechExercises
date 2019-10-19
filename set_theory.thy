@@ -74,17 +74,18 @@ proof (rule notI)
             apply (unfold Ball_def)
             apply assumption
             done
+          
+          
           have b4: \<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S \<Longrightarrow> \<forall>x. x \<in> {x \<in> S . x \<notin> x} \<longrightarrow> x \<in> S\<close>
             apply (rule allI)
             apply (rule impI)
             apply (erule CollectD1)
             done
-          hence \<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S \<Longrightarrow>\<forall>x\<in>{x \<in> S . x \<notin> x}. x \<in> S\<close>
-            by (unfold Ball_def)
-          hence \<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S \<Longrightarrow> {x \<in> S . x \<notin> x} \<subseteq> S\<close> 
-            by (unfold subset_def)
-          hence \<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S \<Longrightarrow> W \<subseteq> S\<close> by (unfold W_def)
-          hence b0:\<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S \<Longrightarrow> W \<in> Pow(S)\<close> by (rule PowI)
+          from i have \<open>\<forall>x. x \<in> {x \<in> S . x \<notin> x} \<longrightarrow> x \<in> S\<close> by (rule b4)
+          hence \<open>\<forall>x\<in>{x \<in> S . x \<notin> x}. x \<in> S\<close> by (unfold Ball_def)
+          hence \<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (unfold subset_def)
+          hence \<open>W \<subseteq> S\<close> by (unfold W_def)
+          hence b0:\<open>W \<in> Pow(S)\<close> by (rule PowI)
           have \<open>W \<in> S\<close>
             apply (rule mp[where P="W\<in>Pow(S)"])
              apply (rule spec[where x=W])
