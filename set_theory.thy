@@ -224,15 +224,32 @@ definition IsSet :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
   where IsSet_def : "IsSet(P) == \<exists> y. \<forall> z. z \<in> y \<longleftrightarrow> P(z)"
 
 lemma Nat0 : "Nat(0)"
-  apply (unfold Nat_def)
-  apply (unfold ClassInter_def)
+  apply(unfold Nat_def)
+  apply(unfold ClassInter_def)
   apply(rule allI)
   apply(rule impI)
-  apply (unfold Ind_def)
-  apply(rule conjE)
-   apply assumption
+  apply(unfold Ind_def)
+  apply(erule conjE)
   apply assumption
   done
+
+lemma Nat0' : "Nat(0)"
+proof (unfold Nat_def) show \<open>ClassInter(Ind, 0)\<close>
+  proof (unfold ClassInter_def) show \<open>\<forall>y. Ind(y) \<longrightarrow> 0 \<in> y\<close>
+    proof (rule allI) show \<open>\<And>y. Ind(y) \<longrightarrow> 0 \<in> y\<close>
+      proof (rule impI) show \<open>\<And>y. Ind(y) \<Longrightarrow> 0 \<in> y\<close>
+        proof (unfold Ind_def) show \<open>\<And>y. 0 \<in> y \<and> (\<forall>ya\<in>y. succ(ya) \<in> y) \<Longrightarrow> 0 \<in> y\<close>
+          proof (erule conjE) show
+                 \<open>\<And>y. 0 \<in> y \<Longrightarrow>
+                  \<forall>ya\<in>y. succ(ya) \<in> y \<Longrightarrow>
+                  0 \<in> y\<close>
+              by assumption
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
 
 lemma NatSu:
   fixes x w
@@ -540,12 +557,12 @@ proof
   fix x
   show \<open>(Nat(x) \<longrightarrow> x\<in>Inf)\<close>
   proof
-    assume "Nat(x)"
-    then have \<open>ClassInter(Ind, x)\<close> by (unfold Nat_def)
-    then have "\<forall>y. Ind(y) \<longrightarrow> x \<in> y" by (unfold ClassInter_def)
-    then have "Ind(Inf) \<longrightarrow> x \<in> Inf" by (rule spec)
-    then have p3:"Ind(Inf) \<Longrightarrow> x \<in> Inf" by (rule mp)
-    from IndInf show "x \<in> Inf" by (rule p3)
+    assume \<open>Nat(x)\<close>
+    hence \<open>ClassInter(Ind, x)\<close> by (unfold Nat_def)
+    hence \<open>\<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close> by (unfold ClassInter_def)
+    hence \<open>Ind(Inf) \<longrightarrow> x \<in> Inf\<close> by (rule spec)
+    hence p:\<open>Ind(Inf) \<Longrightarrow> x \<in> Inf\<close> by (rule mp)
+    from IndInf show \<open>x \<in> Inf\<close> by (rule p)
   qed
 qed
 
