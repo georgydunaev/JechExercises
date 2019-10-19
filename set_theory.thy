@@ -54,6 +54,15 @@ lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
   apply(erule sym)
   done
 
+lemma l3': \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
+proof (rule subsetI)
+  fix x
+  assume p2:\<open>x \<in> S\<close>
+  have p1:"x=x" by (rule refl)
+  have p3:"\<And>b. x=b \<Longrightarrow> b=x" by (rule sym)
+  from p1 and p2 and p3 show \<open>x \<in> {b . a \<in> S, a = b}\<close> by (rule ReplaceI)
+qed
+
 (* original theorem has no name, so I had to prove it... *)
 lemma l4_1:  \<open>P \<longleftrightarrow> P \<and> True\<close>
   apply auto
@@ -513,9 +522,9 @@ proof (unfold Nat_def)
   assume p0:\<open>ClassInter(Ind, x)\<close>
   show \<open>x\<in>Inf\<close>
   proof -
-    from p0 have p1:"\<forall>y. Ind(y) \<longrightarrow> x \<in> y" by (unfold ClassInter_def)
-    from p1 have p2:"Ind(Inf) \<longrightarrow> x \<in> Inf" by (rule spec)
-    from p2 have p3:"Ind(Inf) \<Longrightarrow> x \<in> Inf" by (rule mp)
+    from p0 have "\<forall>y. Ind(y) \<longrightarrow> x \<in> y" by (unfold ClassInter_def)
+    then have "Ind(Inf) \<longrightarrow> x \<in> Inf" by (rule spec)
+    then have p3:"Ind(Inf) \<Longrightarrow> x \<in> Inf" by (rule mp)
     from IndInf show p4:"x \<in> Inf" by (rule p3)
   qed
 qed
@@ -526,6 +535,19 @@ proof (rule allI)
   from lwe3 show \<open>(Nat(x) \<longrightarrow> x\<in>Inf)\<close> by (rule impI)
 qed
 
+lemma lwe4' : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
+proof 
+  fix x
+  show \<open>(Nat(x) \<longrightarrow> x\<in>Inf)\<close>
+  proof
+    assume "Nat(x)"
+    then have \<open>ClassInter(Ind, x)\<close> by (unfold Nat_def)
+    then have "\<forall>y. Ind(y) \<longrightarrow> x \<in> y" by (unfold ClassInter_def)
+    then have "Ind(Inf) \<longrightarrow> x \<in> Inf" by (rule spec)
+    then have p3:"Ind(Inf) \<Longrightarrow> x \<in> Inf" by (rule mp)
+    from IndInf show "x \<in> Inf" by (rule p3)
+  qed
+qed
 
 (* how to fold something as ... *)
 lemma SPO2PO : \<open>SPO(R) \<Longrightarrow> PO(\<lambda>x y.(R(x,y)\<or>x=y))\<close>
