@@ -98,21 +98,17 @@ lemma ex1_3:
   shows "Ind({y\<in>x. y\<subseteq>x})"
 proof -
   from a
-  have b: "0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
-  proof (unfold Ind_def) qed
-  from b
-  have c1:"0 \<in> x" and c2:"(\<forall>y\<in>x. succ(y) \<in> x)"
+  have "0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)" by (unfold Ind_def)
+  hence c1:"0 \<in> x" and c2:"(\<forall>y\<in>x. succ(y) \<in> x)"
     by (rule conjunct1, rule conjunct2)
-  from c1
-  have d:"0 \<in> {y \<in> x . y \<subseteq> x}"
+  from c1 have d:"0 \<in> {y \<in> x . y \<subseteq> x}"
     apply(rule CollectI)
     apply(rule empty_subsetI)
     done
   from c1 and c2
   have e:"(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})"
     apply(unfold Ball_def)
-    apply(rule allI, rule impI)
-  proof -
+  proof(rule allI, rule impI)
     fix k::"i"
     assume f: "0 \<in> x"
      and g:\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
@@ -126,7 +122,7 @@ proof -
         apply(rule h)
         done
       from h1 and h2
-      have ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+      show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
         apply(unfold succ_def)
         apply(fold succ_def)
         apply(rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
@@ -143,13 +139,9 @@ proof -
         show ii:"m \<in> x"
         proof -
           from hh
-          have hh: "m \<in> cons(k, k)"
-            by (unfold succ_def)
-          from hh
-          have hh: "m \<in> Upair(k,k) \<union> k"
-            by (unfold cons_def)
-          from hh
-          have hh: "m \<in> Upair(k,k) \<or> m \<in> k"
+          have "m \<in> cons(k, k)" by (unfold succ_def)
+          hence "m \<in> Upair(k,k) \<union> k" by (unfold cons_def)
+          hence hh: "m \<in> Upair(k,k) \<or> m \<in> k"
             apply (unfold Un_def)
             apply (erule UnionE)
             apply (erule UpairE)
@@ -165,25 +157,16 @@ proof -
             show ghj:"k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
               apply(erule disjE)
                apply (erule UpairE)
-                (*apply(rule subst[where P = "\<lambda>m. m\<in>x"])
-                 apply(rule sym)*)
               apply(erule subst_elem)
                  apply assumption
                apply(erule subst_elem)
                 apply assumption
-(* subst_elem *)
               apply(erule subsetD)
               apply assumption
               done
           qed
         qed
       qed
-      from ik
-      show "succ(k) \<in> {y \<in> x . y \<subseteq> x}"
-        apply(unfold succ_def)
-        apply(fold succ_def)
-        apply(rule ik)
-        done
     qed
   qed
   show "Ind({y \<in> x . y \<subseteq> x})"
@@ -250,6 +233,10 @@ proof (unfold Nat_def) show \<open>ClassInter(Ind, 0)\<close>
     qed
   qed
 qed
+
+lemma zeroisempty : \<open>\<forall>x. \<not> x \<in> 0\<close>
+  apply(rule allI)
+  oops
 
 lemma NatSu:
   fixes x w
