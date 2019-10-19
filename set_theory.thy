@@ -14,24 +14,11 @@ begin
 lemma WinW : \<open>W \<in> W \<Longrightarrow> False\<close>
 proof (rule notE[where P="W\<in>W"])
   assume y:\<open>W \<in> W\<close>
-  show \<open>W \<notin> W\<close>
-  proof -
-  (*show \<open>W \<in> W \<Longrightarrow> W \<notin> W\<close>*)
-    from y have \<open>W \<in> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
-    then show \<open>W \<notin> W\<close> by (rule CollectD2[where A=S])
-  qed
+  then have \<open>W \<in> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
+  then show \<open>W \<notin> W\<close> by (rule CollectD2[where A=S])
 next
-(*  assume q:\<open>W \<in> W\<close>
-  show \<open>W \<in> W\<close> by (rule q)*)
   show \<open>W \<in> W \<Longrightarrow> W \<in> W\<close> by assumption
 qed
-(*  apply (rule notE[where P="W\<in>W"])
-   apply (rule CollectD2[where A=S])
-   apply (fold W_def)
-   apply assumption
-  apply assumption
-  done*)
-
 
 lemma ex_1_2 : "\<not> ( Pow(S) \<subseteq> S )"
   apply (rule notI)
