@@ -56,6 +56,19 @@ lemma IndInf : \<open>Ind(Inf)\<close>
   by(unfold Ind_def, rule infinity)
 
 
+lemma IndE2 :
+  assumes a:\<open>Ind(x)\<close>
+  shows \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
+proof -
+  from a
+  have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
+  hence c1:\<open>0 \<in> x\<close> and c2:\<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close> by (rule conjunct1, rule conjunct2)
+  from c2 have c2':\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (unfold Ball_def)
+  from c2' show c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
+qed
+
+
+
 context
   fixes x
   assumes a:\<open>Ind(x)\<close>
@@ -65,14 +78,14 @@ lemma lem0 : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longright
           succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
 sorry
 
-lemma c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
+(*lemma c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
 proof -
   from a
   have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
   hence c1:\<open>0 \<in> x\<close> and c2:\<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close> by (rule conjunct1, rule conjunct2)
   from c2 have c2':\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (unfold Ball_def)
   from c2' show c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
-qed
+qed*)
 
 theorem ex1_3:
   shows \<open>Ind({y\<in>x. y\<subseteq>x})\<close>
@@ -95,14 +108,26 @@ proof -
 qed
 
 
+lemma w1:\<open>k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> 
+               apply (erule UpairE)
+                apply(erule subst_elem)
+                apply assumption
+               apply(erule subst_elem)
+              apply assumption
+  done
+
+lemma ww2:\<open>k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x\<close>
+              sorry (*by(rule disjE)*)
+
+
 lemma lem0' : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
           succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
 proof -
-    fix k
+  fix k
     assume h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
     from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
     from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
-    from h1 have \<open>succ(k) \<in> x\<close> by (rule c2''')
+    from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2)
 (*
     succ(k) \<subseteq> x
     succ(k) \<in> {y \<in> x . y \<subseteq> x}
@@ -143,14 +168,6 @@ proof -
           (*from ff and gg and hh *)
           show "m \<in> x"
           proof -
-
-            have w1:\<open>k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> 
-               apply (erule UpairE)
-                apply(erule subst_elem)
-                apply assumption
-               apply(erule subst_elem)
-              apply assumption
-              done
             from ff and gg have w1':\<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule w1)
             from gg have w2:\<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (erule subsetD)
             
