@@ -62,30 +62,31 @@ lemma ex1_3:
   shows \<open>Ind({y\<in>x. y\<subseteq>x})\<close>
 proof -
   from a
-  have "0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)" by (unfold Ind_def)
-  hence c1:\<open>0 \<in> x\<close> and c2:"(\<forall>y\<in>x. succ(y) \<in> x)" by (rule conjunct1, rule conjunct2)
-  have y:\<open>0\<subseteq>x\<close> by (rule empty_subsetI)
+  have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
+  hence c1:\<open>0 \<in> x\<close> and c2:\<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close> by (rule conjunct1, rule conjunct2)
+  have y:\<open>0 \<subseteq> x\<close> by (rule empty_subsetI)
   with \<open>0 \<in> x\<close> have d:"0 \<in> {y \<in> x . y \<subseteq> x}" by (rule CollectI)
-  from c1 and c2
-  have e:"(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})"
-    apply(unfold Ball_def)
+  from c2 have c2':\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (unfold Ball_def)
+
+  have kk: (*\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x \<Longrightarrow>*) \<open>     
+    \<forall>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<longrightarrow>
+         succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close>
   proof(rule allI, rule impI)
-    fix k::"i"
-    assume f: "0 \<in> x"
-     and g:\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
-     and h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
-    show i:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+    fix k
+    assume (*g:\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
+       and*) h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
+    from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
+    from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
+    
+    show i:\<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close>
     proof -
-      from h have h1:"k \<in> x" by (rule CollectD1[where A="x"])
-      from h have h2:"k\<subseteq>x" by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
-      from h1 and h2
-      show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+      from h1 and h2 show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
         apply(unfold succ_def)
         apply(fold succ_def)
         apply(rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
          apply(rule mp)
           apply(rule spec[where x="k"])
-          apply(rule g)
+          apply(rule c2')
          apply assumption
         apply(rule subsetI)
       proof -
@@ -111,7 +112,7 @@ proof -
             done
           from ff and gg and hh show "m \<in> x"
           proof -
-            show ghj:"k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
+            show "k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
               apply(erule disjE)
                apply (erule UpairE)
               apply(erule subst_elem)
@@ -126,12 +127,10 @@ proof -
       qed
     qed
   qed
-  show "Ind({y \<in> x . y \<subseteq> x})"
-    apply(unfold Ind_def)
-    apply(rule conjI)
-     apply(rule d)
-    apply(rule e)
-    done
+  from kk have e:\<open>(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})\<close> by (fold Ball_def)
+  from d and e have \<open>0 \<in> {y \<in> x . y \<subseteq> x} \<and>
+  (\<forall>y\<in>{y \<in> x . y \<subseteq> x}.  succ(y) \<in> {y \<in> x . y \<subseteq> x})\<close> by (rule conjI)
+  then show "Ind({y \<in> x . y \<subseteq> x})" by (fold Ind_def)
 qed
 
 
