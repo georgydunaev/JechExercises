@@ -53,15 +53,12 @@ lemma ex_1_2 : "\<not> ( Pow(S) \<subseteq> S )"
 lemma ex_1_2' : \<open>\<not> ( Pow(S) \<subseteq> S )\<close>
 proof (rule notI)
   assume \<open>Pow(S) \<subseteq> S\<close>
-  hence \<open>\<forall>x\<in>Pow(S). x \<in> S\<close> by (unfold subset_def)
-  hence \<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S\<close> by (unfold Ball_def)
-  hence i':\<open>W \<in> Pow(S) \<longrightarrow> W \<in> S\<close> by (rule spec[where x=W])
+  hence uc:\<open>\<forall>x\<in>Pow(S). x \<in> S\<close> by (unfold subset_def)
 
   from CollectD1 have\<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (rule subsetI)
   hence \<open>W \<subseteq> S\<close> by (unfold W_def)
   hence \<open>W \<in> Pow(S)\<close> by (rule PowI)
-  from i' and this have WinS:\<open>W \<in> S\<close> by (rule mp[where P="W\<in>Pow(S)"])
-
+  from uc and this have WinS:\<open>W \<in> S\<close> by (rule bspec[where x=W])
   show \<open>False\<close>
   proof (rule case_split[where P="W\<in>W"])
     show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule WinW)
