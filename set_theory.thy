@@ -16,9 +16,9 @@ lemma WinW :
   shows \<open>False\<close>
 proof (rule notE[where P="W\<in>W"])
   from y have \<open>W \<in> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
-  then show \<open>W \<notin> W\<close> by (rule CollectD2[where A=S])
+  then show \<open>W \<notin> W\<close> by (rule CollectD2)
 next
-  show \<open>W \<in> W\<close> by (rule y)
+  show \<open>W \<in> W\<close>  by (rule y)
 qed
 
 lemma ex_1_2 : "\<not> ( Pow(S) \<subseteq> S )"
@@ -53,26 +53,24 @@ lemma ex_1_2 : "\<not> ( Pow(S) \<subseteq> S )"
 lemma ex_1_2' : \<open>\<not> ( Pow(S) \<subseteq> S )\<close>
 proof (rule notI)
   assume \<open>Pow(S) \<subseteq> S\<close>
-  hence uc:\<open>\<forall>x\<in>Pow(S). x \<in> S\<close> by (unfold subset_def)
-
-  from CollectD1 have\<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (rule subsetI)
+  from CollectD1 have \<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (rule subsetI)
   hence \<open>W \<subseteq> S\<close> by (unfold W_def)
   hence \<open>W \<in> Pow(S)\<close> by (rule PowI)
-  from uc and this have WinS:\<open>W \<in> S\<close> by (rule bspec[where x=W])
+  from \<open>Pow(S) \<subseteq> S\<close> and \<open>W \<in> Pow(S)\<close> have \<open>W \<in> S\<close> by (rule subsetD)
   show \<open>False\<close>
   proof (rule case_split[where P="W\<in>W"])
     show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule WinW)
   next
-    assume y:\<open>W \<notin> W\<close>
+    assume \<open>W \<notin> W\<close>
     have \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close>
     proof (rule CollectI)
       from \<open>W \<notin> W\<close> show \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
     next
-      from WinS show \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def)
+      from \<open>W \<in> S\<close> show \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def)
     qed
     hence \<open>W \<in> W\<close> by (fold W_def) 
-    from y and this 
-    show \<open>False\<close> by (rule notE[where P="W\<in>W"])
+    from \<open>W \<notin> W\<close> and \<open>W \<in> W\<close>
+    show \<open>False\<close> by (rule notE)
   qed
 qed
 
