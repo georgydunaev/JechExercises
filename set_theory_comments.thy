@@ -1,6 +1,41 @@
 theory set_theory_comments imports ZFC classical_axioms fol_theorems
 begin
 
+
+context
+  fixes S
+  fixes W defines W_def : "W == {x\<in>S. x\<notin>x}"
+begin
+lemma ex_1_2 : "\<not> ( Pow(S) \<subseteq> S )"
+  apply (rule notI)
+  apply (rule case_split[where P="W\<in>W"])
+  apply (rule notE[where P="W\<in>W"])
+    apply (rule CollectD2[where A=S])
+    apply (fold W_def)
+    apply assumption
+   apply assumption
+  apply (rule notE[where P="W\<in>W"])
+   apply assumption
+  apply (unfold W_def)
+   apply (rule CollectI)
+   apply (fold W_def)
+   prefer 2
+  apply assumption
+  (*subgoal*)
+   apply (unfold subset_def)
+   apply (unfold Ball_def)
+    apply (rule mp[where P="W\<in>Pow(S)"])
+     apply (erule spec[where x=W])
+    apply (rule PowI)
+    apply (unfold W_def)
+    apply (unfold subset_def)
+    apply (unfold Ball_def)
+    apply (rule allI)
+    apply (rule impI)
+    apply (erule CollectD1)
+  done
+end
+
 lemma l5':
 (*  define x where x \<equiv> 0*)
  \<open>\<exists>x. x=x\<close>

@@ -36,13 +36,10 @@ proof (rule notI)
   proof (rule case_split[where P="W\<in>W"])
     show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule WinW)
   next
+    from \<open>W \<in> S\<close> have \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def) moreover
     assume \<open>W \<notin> W\<close>
-    have \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close>
-    proof (rule CollectI)
-      from \<open>W \<notin> W\<close> show \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
-    next
-      from \<open>W \<in> S\<close> show \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def)
-    qed
+    hence \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
+    ultimately have \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close> by (rule CollectI)
     hence \<open>W \<in> W\<close> by (fold W_def) 
     with \<open>W \<notin> W\<close>
     show \<open>False\<close> by (rule notE)
