@@ -5,58 +5,33 @@ begin
 cut_tac; with; (best dest: equalityD2);
 *)
 
+(* ex.1: (a, b) = (c, d) if and only if a = c and b = d *)
+lemma ex_1_1 : \<open><a,b> = <c,d> \<longleftrightarrow> a=c & b=d\<close>
+  by (rule pair.Pair_iff)
 
+(* ex.2: There is no set X such that P (X) \<subset> X *)
 context
   fixes S
-  fixes W defines W_def : "W == {x\<in>S. x\<notin>x}"
+  fixes W defines W_def : \<open>W == {x\<in>S. x\<notin>x}\<close>
 begin
 
 lemma WinW :
-  assumes y:\<open>W \<in> W\<close> 
+  assumes y : \<open>W \<in> W\<close> 
   shows \<open>False\<close>
 proof (rule notE[where P="W\<in>W"])
   from y have \<open>W \<in> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
   then show \<open>W \<notin> W\<close> by (rule CollectD2)
 next
-  show \<open>W \<in> W\<close>  by (rule y)
+  show \<open>W \<in> W\<close> by (rule y)
 qed
 
-lemma ex_1_2 : "\<not> ( Pow(S) \<subseteq> S )"
-  apply (rule notI)
-  apply (rule case_split[where P="W\<in>W"])
-  apply (rule notE[where P="W\<in>W"])
-    apply (rule CollectD2[where A=S])
-    apply (fold W_def)
-    apply assumption
-   apply assumption
-  apply (rule notE[where P="W\<in>W"])
-   apply assumption
-  apply (unfold W_def)
-   apply (rule CollectI)
-   apply (fold W_def)
-   prefer 2
-  apply assumption
-  (*subgoal*)
-   apply (unfold subset_def)
-   apply (unfold Ball_def)
-    apply (rule mp[where P="W\<in>Pow(S)"])
-     apply (erule spec[where x=W])
-    apply (rule PowI)
-    apply (unfold W_def)
-    apply (unfold subset_def)
-    apply (unfold Ball_def)
-    apply (rule allI)
-    apply (rule impI)
-    apply (erule CollectD1)
-  done
-
-lemma ex_1_2' : \<open>\<not> ( Pow(S) \<subseteq> S )\<close>
+lemma ex_1_2 : \<open>\<not> ( Pow(S) \<subseteq> S )\<close>
 proof (rule notI)
   assume \<open>Pow(S) \<subseteq> S\<close>
-  from CollectD1 have \<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (rule subsetI)
+  have \<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> using CollectD1 by (rule subsetI)
   hence \<open>W \<subseteq> S\<close> by (unfold W_def)
   hence \<open>W \<in> Pow(S)\<close> by (rule PowI)
-  from \<open>Pow(S) \<subseteq> S\<close> and \<open>W \<in> Pow(S)\<close> have \<open>W \<in> S\<close> by (rule subsetD)
+  with \<open>Pow(S) \<subseteq> S\<close> have \<open>W \<in> S\<close> by (rule subsetD)
   show \<open>False\<close>
   proof (rule case_split[where P="W\<in>W"])
     show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule WinW)
@@ -69,7 +44,7 @@ proof (rule notI)
       from \<open>W \<in> S\<close> show \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def)
     qed
     hence \<open>W \<in> W\<close> by (fold W_def) 
-    from \<open>W \<notin> W\<close> and \<open>W \<in> W\<close>
+    with \<open>W \<notin> W\<close>
     show \<open>False\<close> by (rule notE)
   qed
 qed
@@ -90,6 +65,7 @@ proof (rule classical)
   qed
   with \<open>\<not> (\<forall>x. P(x))\<close> show ?thesis by contradiction
 qed
+end
 
 theorem Drinker's_Principle: "\<exists>x. drunk(x) \<longrightarrow> (\<forall>x. drunk(x))"
 proof cases
@@ -108,7 +84,6 @@ next
   then show ?thesis ..
 qed
 
-end
 
 lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
   apply(rule subsetI)
