@@ -6,7 +6,7 @@ cut_tac; with; (best dest: equalityD2);
 *)
 
 (* ex 1.1: Verify (a, b) = (c, d) if and only if a = c and b = d. *)
-lemma ex_1_1 : \<open><a,b> = <c,d> \<longleftrightarrow> a=c & b=d\<close>
+theorem ex_1_1 : \<open><a,b> = <c,d> \<longleftrightarrow> a=c & b=d\<close>
   by (rule pair.Pair_iff)
 
 (* ex 1.2: There is no set X such that Pow(X)\<subseteq>X. *)
@@ -25,7 +25,7 @@ next
   show \<open>W \<in> W\<close> by (rule y)
 qed
 
-lemma ex_1_2 : \<open>\<not> ( Pow(S) \<subseteq> S )\<close>
+theorem ex_1_2 : \<open>\<not> ( Pow(S) \<subseteq> S )\<close>
 proof (rule notI)
   assume \<open>Pow(S) \<subseteq> S\<close>
   have \<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> using CollectD1 by (rule subsetI)
@@ -52,13 +52,29 @@ transitive, and for each n, n = {m \<in> N : m < n}. *)
 definition Ind :: "i\<Rightarrow>o"
   where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
 
-lemma IndInf : "Ind(Inf)"
-  apply(unfold Ind_def, rule infinity)
-  done
+lemma IndInf : \<open>Ind(Inf)\<close>
+  by(unfold Ind_def, rule infinity)
 
-lemma ex1_3:
+
+context
   fixes x
   assumes a:\<open>Ind(x)\<close>
+begin
+
+lemma lem0 : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
+          succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
+sorry
+
+lemma c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
+proof -
+  from a
+  have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
+  hence c1:\<open>0 \<in> x\<close> and c2:\<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close> by (rule conjunct1, rule conjunct2)
+  from c2 have c2':\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (unfold Ball_def)
+  from c2' show c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
+qed
+
+theorem ex1_3:
   shows \<open>Ind({y\<in>x. y\<subseteq>x})\<close>
 proof -
   from a
@@ -66,21 +82,35 @@ proof -
   hence c1:\<open>0 \<in> x\<close> and c2:\<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close> by (rule conjunct1, rule conjunct2)
   have y:\<open>0 \<subseteq> x\<close> by (rule empty_subsetI)
   with \<open>0 \<in> x\<close> have d:"0 \<in> {y \<in> x . y \<subseteq> x}" by (rule CollectI)
-  from c2 have c2':\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (unfold Ball_def)
 
-  have kk: (*\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x \<Longrightarrow>*) \<open>     
-    \<forall>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<longrightarrow>
-         succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close>
-  proof(rule allI, rule impI)
+
+  from lem0 have \<open> \<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<longrightarrow>
+          succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close>  by (rule impI)
+  hence kk: \<open>\<forall>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<longrightarrow> succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule allI)
+
+  from kk have e:\<open>(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})\<close> by (fold Ball_def)
+  from d and e have \<open>0 \<in> {y \<in> x . y \<subseteq> x} \<and>
+  (\<forall>y\<in>{y \<in> x . y \<subseteq> x}.  succ(y) \<in> {y \<in> x . y \<subseteq> x})\<close> by (rule conjI)
+  then show "Ind({y \<in> x . y \<subseteq> x})" by (fold Ind_def)
+qed
+
+
+lemma lem0' : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
+          succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
+proof -
     fix k
-    assume (*g:\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
-       and*) h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
+    assume h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
     from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
     from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
-    
-    show i:\<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close>
-    proof -
-      from h1 and h2 show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+    from h1 have \<open>succ(k) \<in> x\<close> by (rule c2''')
+(*
+    succ(k) \<subseteq> x
+    succ(k) \<in> {y \<in> x . y \<subseteq> x}
+    cons(k, k) \<in> {y \<in> x . y \<subseteq> x}
+*)
+    from h1 and h2 show i:\<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close>
+    (*proof -
+      from h1 and h2 show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"*)
         apply(unfold succ_def)
         apply(fold succ_def)
         apply(rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
@@ -110,28 +140,29 @@ proof -
              apply(erule subst)
             apply assumption
             done
-          from ff and gg and hh show "m \<in> x"
+          (*from ff and gg and hh *)
+          show "m \<in> x"
           proof -
-            show "k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
-              apply(erule disjE)
+
+            have w1:\<open>k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> 
                apply (erule UpairE)
-              apply(erule subst_elem)
-                 apply assumption
-               apply(erule subst_elem)
+                apply(erule subst_elem)
                 apply assumption
-              apply(erule subsetD)
+               apply(erule subst_elem)
               apply assumption
               done
+            from ff and gg have w1':\<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule w1)
+            from gg have w2:\<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (erule subsetD)
+            
+(*k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow>*)
+            from w1' and w2 and hh have "m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
+              sorry (*by(rule disjE)*)
+
           qed
         qed
       qed
     qed
-  qed
-  from kk have e:\<open>(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})\<close> by (fold Ball_def)
-  from d and e have \<open>0 \<in> {y \<in> x . y \<subseteq> x} \<and>
-  (\<forall>y\<in>{y \<in> x . y \<subseteq> x}.  succ(y) \<in> {y \<in> x . y \<subseteq> x})\<close> by (rule conjI)
-  then show "Ind({y \<in> x . y \<subseteq> x})" by (fold Ind_def)
-qed
+
 
 
 
