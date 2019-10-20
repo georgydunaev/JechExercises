@@ -5,11 +5,11 @@ begin
 cut_tac; with; (best dest: equalityD2);
 *)
 
-(* ex.1: (a, b) = (c, d) if and only if a = c and b = d *)
+(* ex 1.1: Verify (a, b) = (c, d) if and only if a = c and b = d. *)
 lemma ex_1_1 : \<open><a,b> = <c,d> \<longleftrightarrow> a=c & b=d\<close>
   by (rule pair.Pair_iff)
 
-(* ex.2: There is no set X such that P (X) \<subset> X *)
+(* ex 1.2: There is no set X such that Pow(X)\<subseteq>X. *)
 context
   fixes S
   fixes W defines W_def : \<open>W == {x\<in>S. x\<notin>x}\<close>
@@ -45,6 +45,97 @@ proof (rule notI)
     show \<open>False\<close> by (rule notE)
   qed
 qed
+end
+
+(* ex 1.3: If X is inductive, then the set {x \<in> X : x \<subseteq> X} is inductive. Hence N is
+transitive, and for each n, n = {m \<in> N : m < n}. *)
+definition Ind :: "i\<Rightarrow>o"
+  where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
+
+lemma IndInf : "Ind(Inf)"
+  apply(unfold Ind_def, rule infinity)
+  done
+
+lemma ex1_3:
+  fixes x
+  assumes a:\<open>Ind(x)\<close>
+  shows \<open>Ind({y\<in>x. y\<subseteq>x})\<close>
+proof -
+  from a
+  have "0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)" by (unfold Ind_def)
+  hence c1:\<open>0 \<in> x\<close> and c2:"(\<forall>y\<in>x. succ(y) \<in> x)" by (rule conjunct1, rule conjunct2)
+  have y:\<open>0\<subseteq>x\<close> by (rule empty_subsetI)
+  with \<open>0 \<in> x\<close> have d:"0 \<in> {y \<in> x . y \<subseteq> x}" by (rule CollectI)
+  from c1 and c2
+  have e:"(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})"
+    apply(unfold Ball_def)
+  proof(rule allI, rule impI)
+    fix k::"i"
+    assume f: "0 \<in> x"
+     and g:\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
+     and h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
+    show i:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+    proof -
+      from h have h1:"k \<in> x" by (rule CollectD1[where A="x"])
+      from h have h2:"k\<subseteq>x" by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
+      from h1 and h2
+      show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
+        apply(unfold succ_def)
+        apply(fold succ_def)
+        apply(rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
+         apply(rule mp)
+          apply(rule spec[where x="k"])
+          apply(rule g)
+         apply assumption
+        apply(rule subsetI)
+      proof -
+        fix m::i
+        assume ff: "k \<in> x"
+        and gg: "k \<subseteq> x"
+        and hh: \<open>m \<in> succ(k)\<close>
+        show ii:"m \<in> x"
+        proof -
+          from hh
+          have "m \<in> cons(k, k)" by (unfold succ_def)
+          hence "m \<in> Upair(k,k) \<union> k" by (unfold cons_def)
+          hence hh: "m \<in> Upair(k,k) \<or> m \<in> k"
+            apply (unfold Un_def)
+            apply (erule UnionE)
+            apply (erule UpairE)
+             apply(rule disjI1)
+             apply(erule subst)
+             apply assumption
+             apply(rule disjI2)
+             apply(erule subst)
+            apply assumption
+            done
+          from ff and gg and hh show "m \<in> x"
+          proof -
+            show ghj:"k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
+              apply(erule disjE)
+               apply (erule UpairE)
+              apply(erule subst_elem)
+                 apply assumption
+               apply(erule subst_elem)
+                apply assumption
+              apply(erule subsetD)
+              apply assumption
+              done
+          qed
+        qed
+      qed
+    qed
+  qed
+  show "Ind({y \<in> x . y \<subseteq> x})"
+    apply(unfold Ind_def)
+    apply(rule conjI)
+     apply(rule d)
+    apply(rule e)
+    done
+qed
+
+
+
 
 lemma de_Morgan:
   assumes "\<not> (\<forall>x. P(x))"
@@ -62,7 +153,6 @@ proof (rule classical)
   qed
   with \<open>\<not> (\<forall>x. P(x))\<close> show ?thesis by contradiction
 qed
-end
 
 theorem Drinker's_Principle: "\<exists>x. drunk(x) \<longrightarrow> (\<forall>x. drunk(x))"
 proof cases
@@ -132,96 +222,7 @@ lemma l4: \<open>S = {a \<in> S. True}\<close>
   apply(rule Collect_subset)
   done
 
-definition Ind :: "i\<Rightarrow>o"
-  where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
 
-lemma IndInf : "Ind(Inf)"
-  apply(unfold Ind_def, rule infinity)
-  done
-
-lemma ex1_3:
-  fixes x
-  assumes a:"Ind(x)"
-  shows "Ind({y\<in>x. y\<subseteq>x})"
-proof -
-  from a
-  have "0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)" by (unfold Ind_def)
-  hence c1:"0 \<in> x" and c2:"(\<forall>y\<in>x. succ(y) \<in> x)" by (rule conjunct1, rule conjunct2)
-  from c1 have d:"0 \<in> {y \<in> x . y \<subseteq> x}"
-    apply(rule CollectI)
-    apply(rule empty_subsetI)
-    done
-  from c1 and c2
-  have e:"(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})"
-    apply(unfold Ball_def)
-  proof(rule allI, rule impI)
-    fix k::"i"
-    assume f: "0 \<in> x"
-     and g:\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
-     and h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
-    show i:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
-    proof -
-      from h
-      have h1:"k \<in> x" and h2:"k\<subseteq>x"
-        apply(rule CollectD1[where A="x"])
-        apply(rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
-        apply(rule h)
-        done
-      from h1 and h2
-      show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"
-        apply(unfold succ_def)
-        apply(fold succ_def)
-        apply(rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
-         apply(rule mp)
-          apply(rule spec[where x="k"])
-          apply(rule g)
-         apply assumption
-        apply(rule subsetI)
-      proof -
-        fix m::i
-        assume ff: "k \<in> x"
-        and gg: "k \<subseteq> x"
-        and hh: \<open>m \<in> succ(k)\<close>
-        show ii:"m \<in> x"
-        proof -
-          from hh
-          have "m \<in> cons(k, k)" by (unfold succ_def)
-          hence "m \<in> Upair(k,k) \<union> k" by (unfold cons_def)
-          hence hh: "m \<in> Upair(k,k) \<or> m \<in> k"
-            apply (unfold Un_def)
-            apply (erule UnionE)
-            apply (erule UpairE)
-             apply(rule disjI1)
-             apply(erule subst)
-             apply assumption
-             apply(rule disjI2)
-             apply(erule subst)
-            apply assumption
-            done
-          from ff and gg and hh show "m \<in> x"
-          proof -
-            show ghj:"k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
-              apply(erule disjE)
-               apply (erule UpairE)
-              apply(erule subst_elem)
-                 apply assumption
-               apply(erule subst_elem)
-                apply assumption
-              apply(erule subsetD)
-              apply assumption
-              done
-          qed
-        qed
-      qed
-    qed
-  qed
-  show "Ind({y \<in> x . y \<subseteq> x})"
-    apply(unfold Ind_def)
-    apply(rule conjI)
-     apply(rule d)
-    apply(rule e)
-    done
-qed
 
 definition ClassInter :: \<open>(i\<Rightarrow>o)\<Rightarrow>(i\<Rightarrow>o)\<close> (*\<open>[ i \<Rightarrow> o, i ] \<Rightarrow> o\<close>*)
   where ClassInter_def : "ClassInter(P,x) == \<forall>y. P(y) \<longrightarrow> x\<in>y"
