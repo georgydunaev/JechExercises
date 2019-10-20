@@ -145,21 +145,32 @@ proof -
     done
 qed
 
-
-lemma lem0' : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
-          succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
-proof -
-  fix k
-    assume h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
-    from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
-    from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
-    from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2)
 (*
     succ(k) \<subseteq> x
     succ(k) \<in> {y \<in> x . y \<subseteq> x}
     cons(k, k) \<in> {y \<in> x . y \<subseteq> x}
 *)
-    from h1 and h2 show i:\<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close>
+
+lemma lem0' : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
+          succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
+proof -
+  fix k
+  assume h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
+  from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
+  from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
+  from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2)
+
+  have \<open>\<And>xa. xa \<in> succ(k) \<Longrightarrow> xa \<in> x\<close>
+  proof -
+    fix xa
+    assume \<open>xa \<in> succ(k)\<close>
+    show \<open>xa \<in> x\<close> sorry
+  qed
+  hence \<open>succ(k) \<subseteq> x\<close> by (rule subsetI)
+  with \<open>succ(k) \<in> x\<close>
+  show i:\<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
+qed  
+
     (*proof -
       from h1 and h2 show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"*)
         apply(unfold succ_def)
@@ -181,6 +192,7 @@ proof -
           from ff and gg and hh have "m \<in> x" by (rule ww)
         qed
       qed
+*)
     qed
 
 (*
