@@ -47,6 +47,49 @@ proof (rule notI)
 qed
 end
 
+lemma inSing : \<open>xa \<in> Upair(k, k) \<Longrightarrow> xa = k\<close>
+proof (erule UpairE)
+  assume h:\<open>xa = k\<close> 
+  show \<open>xa = k\<close> by (rule h)
+next
+  assume h:\<open>xa = k\<close> 
+  show \<open>xa = k\<close> by (rule h)
+qed
+
+lemma UnE :
+  assumes \<open>x \<in> (a \<union> b)\<close>
+  shows \<open>x \<in> a \<or> x \<in> b\<close>
+proof -
+  have f:\<open>x \<in> \<Union>(Upair(a, b)) \<Longrightarrow> x \<in> a \<or> x \<in> b\<close>
+    apply(erule UnionE)
+    apply(erule UpairE)
+    apply(erule subst[where b=a])
+     apply(erule disjI1)
+    apply(erule subst[where b=b])
+     apply(erule disjI2)
+    done
+  from \<open>x\<in>(a\<union>b)\<close> have \<open>x \<in> \<Union>(Upair(a, b))\<close> by (unfold Un_def)
+  thus \<open>x \<in> a \<or> x \<in> b\<close> by (rule f)
+qed
+
+lemma inSucc :
+  fixes xa and k
+  assumes \<open>xa \<in> succ(k)\<close>
+  shows \<open>xa = k \<or> xa \<in> k\<close>
+proof -
+  from \<open>xa \<in> succ(k)\<close> have \<open>xa \<in> cons(k, k)\<close> by (unfold succ_def)
+  hence \<open>xa \<in> (Upair(k,k) \<union> k)\<close> by (unfold cons_def)
+  hence \<open>xa \<in> Upair(k,k) \<or> xa \<in> k\<close> by (rule UnE) 
+  thus \<open>xa = k \<or> xa \<in> k\<close>
+  proof (rule disjE)
+    show \<open>xa \<in> k \<Longrightarrow> xa = k \<or> xa \<in> k\<close> by (rule disjI2)
+  next
+    assume \<open>xa \<in> Upair(k, k)\<close>
+    hence \<open>xa = k\<close> by (rule inSing)
+    thus \<open>xa = k \<or> xa \<in> k\<close> by (rule disjI1)
+  qed
+qed
+
 (* ex 1.3: If X is inductive, then the set {x \<in> X : x \<subseteq> X} is inductive. Hence N is
 transitive, and for each n, n = {m \<in> N : m < n}. *)
 definition Ind :: "i\<Rightarrow>o"
@@ -67,26 +110,6 @@ proof -
   from c2' show c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
 qed
 
-
-lemma UnE :
-  assumes \<open>x \<in> (a \<union> b)\<close>
-  shows \<open>x \<in> a \<or> x \<in> b\<close>
-proof -
-  from \<open>x\<in>(a\<union>b)\<close> have z:\<open>x \<in> \<Union>(Upair(a, b))\<close> by (unfold Un_def)
-(* "[| A \<in> \<Union>(C);  !!B.[| A: B;  B: C |] ==> R |] ==> R"*)
-  (*then have \<open>\<And>B. x \<in> B \<Longrightarrow>
-         B \<in> Upair(a, b)\<close>  by (erule UnionE)*)
-  have f:\<open>x \<in> \<Union>(Upair(a, b)) \<Longrightarrow> x \<in> a \<or> x \<in> b\<close>
-    apply(erule UnionE)
-    apply(erule UpairE)
-    apply(erule subst[where b=a])
-     apply(erule disjI1)
-    apply(erule subst[where b=b])
-     apply(erule disjI2)
-    done
-  from z show \<open>x \<in> a \<or> x \<in> b\<close> by (rule f)
-qed
-
 context
   fixes x
   assumes a:\<open>Ind(x)\<close>
@@ -94,16 +117,31 @@ begin
 
 lemma lem0 : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
           succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
-sorry
-
-(*lemma c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
 proof -
-  from a
-  have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
-  hence c1:\<open>0 \<in> x\<close> and c2:\<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close> by (rule conjunct1, rule conjunct2)
-  from c2 have c2':\<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (unfold Ball_def)
-  from c2' show c2''':\<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
-qed*)
+  fix k
+  assume h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
+  from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
+  from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
+  from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2)
+  (*\<open>k \<subseteq> x\<close>*)
+  have \<open>\<And>xa. xa \<in> succ(k) \<Longrightarrow> xa \<in> x\<close>
+  proof -
+    fix xa
+    assume \<open>xa \<in> succ(k)\<close>
+    then have \<open>xa = k \<or> xa \<in> k\<close> by (rule inSucc)
+    then show \<open>xa \<in> x\<close>
+    proof (rule disjE)
+      assume \<open>xa = k\<close>
+      with h1 show \<open>xa \<in> x\<close> by (rule subst_elem)
+    next
+      assume \<open>xa \<in> k\<close>
+      with h2  show \<open>xa \<in> x\<close> by (rule subsetD)
+    qed
+  qed
+  hence \<open>succ(k) \<subseteq> x\<close> by (rule subsetI)
+  with \<open>succ(k) \<in> x\<close>
+  show \<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
+qed  
 
 theorem ex1_3:
   shows \<open>Ind({y\<in>x. y\<subseteq>x})\<close>
@@ -125,6 +163,15 @@ proof -
   then show "Ind({y \<in> x . y \<subseteq> x})" by (fold Ind_def)
 qed
 
+
+lemma ww1':
+  assumes \<open>k \<in> x\<close>
+      and \<open>m \<in> Upair(k, k)\<close>
+    shows \<open>m \<in> x\<close>
+proof -
+  from \<open>m \<in> Upair(k, k)\<close> have \<open>m = k\<close> by (rule inSing) 
+  with \<open>k \<in> x\<close> show \<open>m \<in> x\<close> by (rule subst_elem)
+qed
 
 lemma ww1:\<open>k \<in> x \<Longrightarrow> m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close>
 proof (erule UpairE)
@@ -172,103 +219,7 @@ proof -
     apply assumption
     done
 qed
-
-(*
-    succ(k) \<subseteq> x
-    succ(k) \<in> {y \<in> x . y \<subseteq> x}
-    cons(k, k) \<in> {y \<in> x . y \<subseteq> x}
-*)
-
-lemma inSing : \<open>xa \<in> Upair(k, k) \<Longrightarrow> xa = k\<close>
-proof (erule UpairE)
-  assume h:\<open>xa = k\<close> 
-  show \<open>xa = k\<close> by (rule h)
-next
-  assume h:\<open>xa = k\<close> 
-  show \<open>xa = k\<close> by (rule h)
-qed
-
-lemma inSucc :
-  fixes xa and k
-  assumes \<open>xa \<in> succ(k)\<close>
-  shows \<open>xa = k \<or> xa \<in> k\<close>
-proof -
-  from \<open>xa \<in> succ(k)\<close> have \<open>xa \<in> cons(k, k)\<close> by (unfold succ_def)
-  hence \<open>xa \<in> (Upair(k,k) \<union> k)\<close> by (unfold cons_def)
-  hence \<open>xa \<in> Upair(k,k) \<or> xa \<in> k\<close> by (rule UnE) 
-  thus \<open>xa = k \<or> xa \<in> k\<close>
-  proof (rule disjE)
-    show \<open>xa \<in> k \<Longrightarrow> xa = k \<or> xa \<in> k\<close> by (rule disjI2)
-  next
-    assume \<open>xa \<in> Upair(k, k)\<close>
-    hence \<open>xa = k\<close> by (rule inSing)
-    thus \<open>xa = k \<or> xa \<in> k\<close> by (rule disjI1)
-  qed
-qed
-
-lemma lem0' : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
-          succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
-proof -
-  fix k
-  assume h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
-  from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
-  from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
-  from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2)
-  (*\<open>k \<subseteq> x\<close>*)
-  have \<open>\<And>xa. xa \<in> succ(k) \<Longrightarrow> xa \<in> x\<close>
-  proof -
-    fix xa
-    assume \<open>xa \<in> succ(k)\<close>
-    then have \<open>xa = k \<or> xa \<in> k\<close> by (rule inSucc)
-    then show \<open>xa \<in> x\<close>
-    proof (rule disjE)
-      assume \<open>xa = k\<close>
-      with h1 show \<open>xa \<in> x\<close> by (rule subst_elem)
-    next
-      assume \<open>xa \<in> k\<close>
-      with h2  show \<open>xa \<in> x\<close> by (rule subsetD)
-    qed
-  qed
-  hence \<open>succ(k) \<subseteq> x\<close> by (rule subsetI)
-  with \<open>succ(k) \<in> x\<close>
-  show i:\<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
-qed  
-
-
-
-lemma de_Morgan:
-  assumes "\<not> (\<forall>x. P(x))"
-  shows "\<exists>x. \<not> P(x)"
-proof (rule classical)
-  assume "\<not> (\<exists>x. \<not> P(x))"
-  have "\<forall>x. P(x)"
-  proof
-    fix x show "P(x)"
-    proof (rule classical)
-      assume "\<not> P(x)"
-      then have "\<exists>x. \<not> P(x)" ..
-      with \<open>\<not>(\<exists>x. \<not> P(x))\<close> show ?thesis by contradiction
-    qed
-  qed
-  with \<open>\<not> (\<forall>x. P(x))\<close> show ?thesis by contradiction
-qed
-
-theorem Drinker's_Principle: "\<exists>x. drunk(x) \<longrightarrow> (\<forall>x. drunk(x))"
-proof cases
-  assume "\<forall>x. drunk(x)"
-  then have "drunk(a) \<longrightarrow> (\<forall>x. drunk(x))" for a ..
-  then show ?thesis ..
-next
-  assume "\<not> (\<forall>x. drunk(x))"
-  then have "\<exists>x. \<not> drunk(x)" by (rule de_Morgan)
-  then obtain a where "\<not> drunk(a)" ..
-  have "drunk(a) \<longrightarrow> (\<forall>x. drunk(x))"
-  proof
-    assume "drunk(a)"
-    with \<open>\<not> drunk(a)\<close> show "\<forall>x. drunk(x)" by contradiction
-  qed
-  then show ?thesis ..
-qed
+end
 
 
 lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
@@ -279,7 +230,7 @@ lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
    apply(rule replacement) *)
    apply(rule Replace_iff)*
   apply(unfold Bex_def)
-  (* How to specify metavariable with bounded variable?
+  (* How to specify metavariable with bounded variable? "let ?x = "
      apply(rule exI[where x=x])  [of _ x]*)
   apply(rule exI)
   apply(erule conjI)
@@ -312,6 +263,9 @@ lemma l4: \<open>S = {a \<in> S. True}\<close>
   apply(rule equalityI)
   apply(unfold Collect_def)
    apply(rule subst)
+(*proof -
+  let ?a3 = S*)
+
     apply(rule Replace_cong)
      apply(rule refl)
 (* how to forget assumption? *)
