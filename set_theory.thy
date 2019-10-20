@@ -56,27 +56,26 @@ proof (rule notI)
   hence \<open>\<forall>x\<in>Pow(S). x \<in> S\<close> by (unfold subset_def)
   hence \<open>\<forall>x. x \<in> Pow(S) \<longrightarrow> x \<in> S\<close> by (unfold Ball_def)
   hence i':\<open>W \<in> Pow(S) \<longrightarrow> W \<in> S\<close> by (rule spec[where x=W])
+
+  from CollectD1 have\<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (rule subsetI)
+  hence \<open>W \<subseteq> S\<close> by (unfold W_def)
+  hence \<open>W \<in> Pow(S)\<close> by (rule PowI)
+  from i' and this have WinS:\<open>W \<in> S\<close> by (rule mp[where P="W\<in>Pow(S)"])
+
   show \<open>False\<close>
   proof (rule case_split[where P="W\<in>W"])
     show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule WinW)
   next
     assume y:\<open>W \<notin> W\<close>
-    show \<open>False\<close>
-    proof (rule notE[where P="W\<in>W"])
-      show \<open>W \<notin> W\<close> by (rule y)
+    have \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close>
+    proof (rule CollectI)
+      from \<open>W \<notin> W\<close> show \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
     next
-      have \<open>{x \<in> S . x \<notin> x} \<in> {x \<in> S . x \<notin> x}\<close>
-      proof (rule CollectI)
-        from \<open>W \<notin> W\<close> show \<open>{x \<in> S . x \<notin> x} \<notin> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
-      next
-        from CollectD1 have\<open>{x \<in> S . x \<notin> x} \<subseteq> S\<close> by (rule subsetI)
-        hence \<open>W \<subseteq> S\<close> by (unfold W_def)
-        hence b0:\<open>W \<in> Pow(S)\<close> by (rule PowI)
-        from i' and b0 have \<open>W \<in> S\<close> by (rule mp[where P="W\<in>Pow(S)"])
-        thus \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def)
-      qed
-      thus \<open>W \<in> W\<close> by (fold W_def)
+      from WinS show \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def)
     qed
+    hence \<open>W \<in> W\<close> by (fold W_def) 
+    from y and this 
+    show \<open>False\<close> by (rule notE[where P="W\<in>W"])
   qed
 qed
 
