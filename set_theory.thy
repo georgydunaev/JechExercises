@@ -68,6 +68,24 @@ proof -
 qed
 
 
+lemma UnE :
+  assumes \<open>x \<in> (a \<union> b)\<close>
+  shows \<open>x \<in> a \<or> x \<in> b\<close>
+proof -
+  from \<open>x\<in>(a\<union>b)\<close> have z:\<open>x \<in> \<Union>(Upair(a, b))\<close> by (unfold Un_def)
+(* "[| A \<in> \<Union>(C);  !!B.[| A: B;  B: C |] ==> R |] ==> R"*)
+  (*then have \<open>\<And>B. x \<in> B \<Longrightarrow>
+         B \<in> Upair(a, b)\<close>  by (erule UnionE)*)
+  have f:\<open>x \<in> \<Union>(Upair(a, b)) \<Longrightarrow> x \<in> a \<or> x \<in> b\<close>
+    apply(erule UnionE)
+    apply(erule UpairE)
+    apply(erule subst[where b=a])
+     apply(erule disjI1)
+    apply(erule subst[where b=b])
+     apply(erule disjI2)
+    done
+  from z show \<open>x \<in> a \<or> x \<in> b\<close> by (rule f)
+qed
 
 context
   fixes x
@@ -125,6 +143,16 @@ next
   from \<open>k \<subseteq> x\<close> show \<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (rule subsetD)
 qed
 
+lemma we:
+  assumes \<open>k \<in> x\<close>
+  and \<open>k \<subseteq> x\<close>
+  shows \<open>m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x\<close>
+proof(erule disjE)
+  from \<open>k \<in> x\<close> show \<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule ww1)
+next
+  from \<open>k \<subseteq> x\<close> show \<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (rule subsetD)
+qed
+
 lemma lem1 :
   assumes hh: \<open>m \<in> succ(k)\<close>
   shows \<open>m \<in> Upair(k,k) \<or> m \<in> k\<close>
@@ -151,6 +179,33 @@ qed
     cons(k, k) \<in> {y \<in> x . y \<subseteq> x}
 *)
 
+lemma inSing : \<open>xa \<in> Upair(k, k) \<Longrightarrow> xa = k\<close>
+proof (erule UpairE)
+  assume h:\<open>xa = k\<close> 
+  show \<open>xa = k\<close> by (rule h)
+next
+  assume h:\<open>xa = k\<close> 
+  show \<open>xa = k\<close> by (rule h)
+qed
+
+lemma inSucc :
+  fixes xa and k
+  assumes \<open>xa \<in> succ(k)\<close>
+  shows \<open>xa = k \<or> xa \<in> k\<close>
+proof -
+  from \<open>xa \<in> succ(k)\<close> have \<open>xa \<in> cons(k, k)\<close> by (unfold succ_def)
+  hence \<open>xa \<in> (Upair(k,k) \<union> k)\<close> by (unfold cons_def)
+  hence \<open>xa \<in> Upair(k,k) \<or> xa \<in> k\<close> by (rule UnE) 
+  thus \<open>xa = k \<or> xa \<in> k\<close>
+  proof (rule disjE)
+    show \<open>xa \<in> k \<Longrightarrow> xa = k \<or> xa \<in> k\<close> by (rule disjI2)
+  next
+    assume \<open>xa \<in> Upair(k, k)\<close>
+    hence \<open>xa = k\<close> by (rule inSing)
+    thus \<open>xa = k \<or> xa \<in> k\<close> by (rule disjI1)
+  qed
+qed
+
 lemma lem0' : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
           succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
 proof -
@@ -159,54 +214,25 @@ proof -
   from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
   from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
   from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2)
-
+  (*\<open>k \<subseteq> x\<close>*)
   have \<open>\<And>xa. xa \<in> succ(k) \<Longrightarrow> xa \<in> x\<close>
   proof -
     fix xa
     assume \<open>xa \<in> succ(k)\<close>
-    show \<open>xa \<in> x\<close> sorry
+    then have \<open>xa = k \<or> xa \<in> k\<close> by (rule inSucc)
+    then show \<open>xa \<in> x\<close>
+    proof (rule disjE)
+      assume \<open>xa = k\<close>
+      with h1 show \<open>xa \<in> x\<close> by (rule subst_elem)
+    next
+      assume \<open>xa \<in> k\<close>
+      with h2  show \<open>xa \<in> x\<close> by (rule subsetD)
+    qed
   qed
   hence \<open>succ(k) \<subseteq> x\<close> by (rule subsetI)
   with \<open>succ(k) \<in> x\<close>
   show i:\<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
 qed  
-
-    (*proof -
-      from h1 and h2 show ik:"succ(k) \<in> {y \<in> x . y \<subseteq> x}"*)
-        apply(unfold succ_def)
-        apply(fold succ_def)
-        apply(rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
-         apply(rule mp)
-          apply(rule spec[where x="k"])
-          apply(rule c2')
-         apply assumption
-        apply(rule subsetI)
-      proof -
-        fix m::i
-        assume ff: "k \<in> x"
-        and gg: "k \<subseteq> x"
-        and hh: \<open>m \<in> succ(k)\<close>
-        show ii:"m \<in> x"
-        proof -
-          
-          from ff and gg and hh have "m \<in> x" by (rule ww)
-        qed
-      qed
-*)
-    qed
-
-(*
-          proof -
-            from ff and gg have w1':\<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule w1)
-            from gg have w2:\<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (erule subsetD)
-            
-(*k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow>*)
-            from w1' and w2 and hh have "m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x"
-              sorry (*by(rule disjE)*)
-
-          qed
-
-*)
 
 
 
