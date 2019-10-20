@@ -108,16 +108,42 @@ proof -
 qed
 
 
-lemma w1:\<open>k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> 
-               apply (erule UpairE)
-                apply(erule subst_elem)
-                apply assumption
-               apply(erule subst_elem)
-              apply assumption
-  done
+lemma ww1:\<open>k \<in> x \<Longrightarrow> m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close>
+proof (erule UpairE)
+  show \<open>k \<in> x \<Longrightarrow> m = k \<Longrightarrow> m \<in> x\<close> by (erule subst_elem)
+next
+  show \<open>k \<in> x \<Longrightarrow> m = k \<Longrightarrow> m \<in> x\<close> by (erule subst_elem)
+qed
 
-lemma ww2:\<open>k \<in> x \<Longrightarrow> k \<subseteq> x \<Longrightarrow> m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x\<close>
-              sorry (*by(rule disjE)*)
+lemma ww:
+  assumes \<open>k \<in> x\<close>
+  and \<open>k \<subseteq> x\<close>
+  shows \<open>m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x\<close>
+proof(erule disjE)
+  from \<open>k \<in> x\<close> show \<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule ww1)
+next
+  from \<open>k \<subseteq> x\<close> show \<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (rule subsetD)
+qed
+
+lemma lem1 :
+  assumes hh: \<open>m \<in> succ(k)\<close>
+  shows \<open>m \<in> Upair(k,k) \<or> m \<in> k\<close>
+proof -
+  from hh
+  have "m \<in> cons(k, k)" by (unfold succ_def)
+  hence "m \<in> Upair(k,k) \<union> k" by (unfold cons_def)
+  thus hh: "m \<in> Upair(k,k) \<or> m \<in> k"
+    apply (unfold Un_def)
+    apply (erule UnionE)
+    apply (erule UpairE)
+     apply(rule disjI1)
+     apply(erule subst)
+     apply assumption
+    apply(rule disjI2)
+    apply(erule subst)
+    apply assumption
+    done
+qed
 
 
 lemma lem0' : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
@@ -151,22 +177,13 @@ proof -
         and hh: \<open>m \<in> succ(k)\<close>
         show ii:"m \<in> x"
         proof -
-          from hh
-          have "m \<in> cons(k, k)" by (unfold succ_def)
-          hence "m \<in> Upair(k,k) \<union> k" by (unfold cons_def)
-          hence hh: "m \<in> Upair(k,k) \<or> m \<in> k"
-            apply (unfold Un_def)
-            apply (erule UnionE)
-            apply (erule UpairE)
-             apply(rule disjI1)
-             apply(erule subst)
-             apply assumption
-             apply(rule disjI2)
-             apply(erule subst)
-            apply assumption
-            done
-          (*from ff and gg and hh *)
-          show "m \<in> x"
+          
+          from ff and gg and hh have "m \<in> x" by (rule ww)
+        qed
+      qed
+    qed
+
+(*
           proof -
             from ff and gg have w1':\<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule w1)
             from gg have w2:\<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (erule subsetD)
@@ -176,11 +193,8 @@ proof -
               sorry (*by(rule disjE)*)
 
           qed
-        qed
-      qed
-    qed
 
-
+*)
 
 
 
