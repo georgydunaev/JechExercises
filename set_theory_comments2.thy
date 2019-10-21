@@ -1,3 +1,7 @@
+(* New words:
+cut_tac; with; (best dest: equalityD2);
+*)
+
 (*
 (* need: IndClass(Nat) 
 0 \in Nat по опред

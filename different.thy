@@ -187,4 +187,70 @@ lemma IndInf_' : "Ind(Inf)"
   apply(unfold Ind_def, rule infinity)
   done
 
+lemma UpairWE:
+  assumes \<open>B \<in> Upair(a, b)\<close>
+  shows \<open>B = a \<or> B = b\<close>
+(*proof -*)
+  oops
+
+lemma lwe : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
+  apply(unfold Nat_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply(unfold ClassInter_def)
+  apply(rule mp)
+   apply(erule spec)
+  apply(rule IndInf)
+  done
+
+lemma NatInInf: "\<And>x. Nat(x) \<Longrightarrow> x \<in> Inf"
+  apply (unfold Nat_def)
+  apply (unfold ClassInter_def)
+  apply(rule mp)
+   apply(erule spec)
+  apply (rule IndInf)
+  done
+
+lemma Nat_def2 : \<open>Nat(x) \<Longrightarrow> \<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close>
+proof -
+  fix x
+  assume \<open>Nat(x)\<close>
+  hence \<open>ClassInter(Ind, x)\<close> by (unfold Nat_def)
+  then show \<open>\<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close> by (unfold ClassInter_def)
+qed
+
+definition IsSet :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
+  where IsSet_def : "IsSet(P) == \<exists> y. \<forall> z. z \<in> y \<longleftrightarrow> P(z)"
+
+
+lemma uio : \<open>IsTransClass(Nat)\<close>
+  apply(unfold IsTransClass_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply(rule allI)
+  apply(rule impI)
+  apply(unfold Nat_def)
+  apply(unfold ClassInter_def)
+  apply(rule allI)
+  apply(rule impI)
+  apply (unfold Ind_def)
+  oops
+
+lemma TheE : "\<And>x. (\<exists>!w. P(w)) \<Longrightarrow> P(x) \<Longrightarrow> x=The(P)"
+  apply (rule sym)
+  apply (erule upair.the_equality2)
+  apply assumption
+  done
+
+lemma ExInf : \<open>\<exists>x. Ind(x)\<close>
+  apply(rule exI)
+  apply(rule IndInf)
+  done
+
+lemma IndOmega : \<open>Ind(Omega)\<close>
+  sorry
+
+lemma NatIsInd2: "omega = nat"
+  oops
+
 end
