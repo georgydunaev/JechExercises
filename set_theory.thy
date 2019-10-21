@@ -1,10 +1,6 @@
 theory set_theory imports ZFC classical_axioms fol_theorems
 begin
 
-(* New words:
-cut_tac; with; (best dest: equalityD2);
-*)
-
 (* ex 1.1: Verify (a, b) = (c, d) if and only if a = c and b = d. *)
 theorem ex_1_1 : \<open><a,b> = <c,d> \<longleftrightarrow> a=c & b=d\<close>
   by (rule pair.Pair_iff)
