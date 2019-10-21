@@ -1,6 +1,56 @@
 theory set_theory imports trivia classical_axioms fol_theorems
 begin
 
+(* preliminaries *)
+definition Ind :: "i\<Rightarrow>o"
+  where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
+
+lemma IndInf : \<open>Ind(Inf)\<close>
+  by(unfold Ind_def, rule infinity)
+
+lemma IndI :
+  assumes c0 : \<open>0 \<in> x\<close>
+      and cS : \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
+    shows \<open>Ind(x)\<close>
+proof -
+  from cS have \<open>\<And>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
+    by (rule impI)
+  hence \<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
+    by (rule allI)
+  hence \<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close>
+    by (fold Ball_def)
+  with c0 have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close>
+    by (rule conjI)
+  thus "Ind(x)" by (fold Ind_def)
+qed
+
+lemma IndE1 :
+  assumes a:\<open>Ind(x)\<close>
+  shows \<open>0 \<in> x\<close>
+proof -
+  from a
+  have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
+  thus \<open>0 \<in> x\<close> by (rule conjunct1)
+qed
+
+lemma IndE2 :
+  assumes a:\<open>Ind(x)\<close>
+  shows \<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close>
+proof -
+  from a
+  have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
+  hence \<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close> by (rule conjunct2)
+  thus \<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (unfold Ball_def)
+qed
+
+lemma IndE2R :
+  assumes a:\<open>Ind(x)\<close>
+  shows \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
+proof -
+  from a have \<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (rule IndE2)
+  thus \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
+qed
+
 (* ex 1.1: Verify (a, b) = (c, d) if and only if a = c and b = d. *)
 theorem ex_1_1 : \<open><a,b> = <c,d> \<longleftrightarrow> a=c & b=d\<close>
   by (rule pair.Pair_iff)
@@ -11,7 +61,7 @@ context
   fixes W defines W_def : \<open>W == {x\<in>S. x\<notin>x}\<close>
 begin
 
-lemma WinW :
+lemma notWinW :
   assumes y : \<open>W \<in> W\<close> 
   shows \<open>False\<close>
 proof (rule notE[where P="W\<in>W"])
@@ -30,7 +80,7 @@ proof (rule notI)
   with \<open>Pow(S) \<subseteq> S\<close> have \<open>W \<in> S\<close> by (rule subsetD)
   show \<open>False\<close>
   proof (rule case_split[where P="W\<in>W"])
-    show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule WinW)
+    show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule notWinW)
   next
     from \<open>W \<in> S\<close> have \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def) moreover
     assume \<open>W \<notin> W\<close>
@@ -45,23 +95,6 @@ end
 
 (* ex 1.3: If X is inductive, then the set {x \<in> X : x \<subseteq> X} is inductive. Hence N is
 transitive, and for each n, n = {m \<in> N : m < n}. *)
-definition Ind :: "i\<Rightarrow>o"
-  where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
-
-lemma IndInf : \<open>Ind(Inf)\<close>
-  by(unfold Ind_def, rule infinity)
-
-lemma IndE2 :
-  assumes a:\<open>Ind(x)\<close>
-  shows \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
-proof -
-  from a
-  have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
-  hence \<open>(\<forall>y\<in>x. succ(y) \<in> x)\<close> by (rule conjunct2)
-  hence \<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (unfold Ball_def)
-  thus \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
-qed
-
 context
   fixes x
   assumes a:\<open>Ind(x)\<close>
@@ -73,7 +106,7 @@ proof -
   assume h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
   from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
   from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
-  from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2)
+  from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2R)
   (*\<open>k \<subseteq> x\<close>*)
   have \<open>\<And>xa. xa \<in> succ(k) \<Longrightarrow> xa \<in> x\<close>
   proof -
@@ -98,25 +131,15 @@ theorem ex1_3:
   shows \<open>Ind({y\<in>x. y\<subseteq>x})\<close>
 proof -
   from a
-  have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close> by (unfold Ind_def)
-  hence \<open>0 \<in> x\<close> by (rule conjunct1)
+  have \<open>0 \<in> x\<close> by (rule IndE1)
   have \<open>0 \<subseteq> x\<close> by (rule empty_subsetI)
-  with \<open>0 \<in> x\<close> have d:"0 \<in> {y \<in> x . y \<subseteq> x}" by (rule CollectI)
-
-  from lem0 have \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<longrightarrow> succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close>
-    by (rule impI)
-  hence \<open>\<forall>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<longrightarrow> succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close>
-    by (rule allI)
-  hence \<open>(\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})\<close>
-    by (fold Ball_def)
-  with d have \<open>0 \<in> {y \<in> x . y \<subseteq> x} \<and> (\<forall>y\<in>{y \<in> x . y \<subseteq> x}. succ(y) \<in> {y \<in> x . y \<subseteq> x})\<close>
-    by (rule conjI)
-  thus "Ind({y \<in> x . y \<subseteq> x})" by (fold Ind_def)
+  with \<open>0 \<in> x\<close> have d:\<open>0 \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule CollectI)
+  from d and lem0 show \<open>Ind({y\<in>x. y\<subseteq>x})\<close> by (rule IndI)
 qed
 
 end
 
-definition ClassInter :: \<open>(i\<Rightarrow>o)\<Rightarrow>(i\<Rightarrow>o)\<close> (*\<open>[ i \<Rightarrow> o, i ] \<Rightarrow> o\<close>*)
+definition ClassInter :: \<open>(i\<Rightarrow>o)\<Rightarrow>(i\<Rightarrow>o)\<close>
   where ClassInter_def : "ClassInter(P,x) == \<forall>y. P(y) \<longrightarrow> x\<in>y"
 
 definition Nat :: \<open>i\<Rightarrow>o\<close>
@@ -146,7 +169,7 @@ definition IsTransClass :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
 lemma Nat0 : \<open>Nat(0)\<close>
 proof -
   have \<open>\<And>y. 0 \<in> y \<and> (\<forall>ya\<in>y. succ(ya) \<in> y) \<Longrightarrow> 0 \<in> y\<close> by (erule conjE)
-  hence  \<open>\<And>y. Ind(y) \<Longrightarrow> 0 \<in> y\<close> by (unfold Ind_def)
+  hence \<open>\<And>y. Ind(y) \<Longrightarrow> 0 \<in> y\<close> by (unfold Ind_def)
   hence \<open>\<And>y. Ind(y) \<longrightarrow> 0 \<in> y\<close> by (rule impI)
   hence \<open>\<forall>y. Ind(y) \<longrightarrow> 0 \<in> y\<close> by (rule allI)
   hence \<open>ClassInter(Ind, 0)\<close> by (unfold ClassInter_def) 
@@ -159,38 +182,15 @@ lemma NatSu:
   assumes b:"Ind(w)"
   shows "succ(x) \<in> w"
 proof -
-  from b
-  have b': "\<forall>y. y\<in>w \<longrightarrow> succ(y) \<in> w"
-    apply(unfold Ind_def)
-    apply(rule allI)
-    apply(rule impI)
-    apply(rule  bspec[where P="%y. succ(y) \<in> w"])
-     apply(erule conjunct2)
-    apply(assumption)
-    done
-  from a b' b
-  show c': "succ(x) \<in> w"
-    apply(unfold Ind_def)
-    apply(rule mp)
-     apply(erule spec)
-    apply(fold Ind_def)
-    apply(rule mp)
-     apply(erule spec)
-    apply(unfold Ind_def)
-
-    apply(rule conjI)
-    prefer 2
-     apply(rule ballI)
-     apply(rule mp)
-      apply(erule spec)
-     apply(assumption)
-    apply(erule conjunct1)
-    done
+  from b have j:\<open>\<And>xa. xa \<in> w \<Longrightarrow> succ(xa) \<in> w\<close> by (rule IndE2R)
+  from a have \<open>Ind(w) \<longrightarrow> x \<in> w\<close> by (rule spec)
+  from this and b have \<open>x \<in> w\<close> by (rule mp)
+  from \<open>x \<in> w\<close> show \<open>succ(x) \<in> w\<close> by (rule j)
 qed
 
-lemma NatSucc : "\<forall> x. Nat(x) \<longrightarrow> Nat(succ(x))"
-  apply (unfold Nat_def)
-  apply (unfold ClassInter_def)
+lemma NatSucc : \<open>\<forall>x. Nat(x) \<longrightarrow> Nat(succ(x))\<close>
+  apply(unfold Nat_def)
+  apply(unfold ClassInter_def)
   apply(rule allI)
   apply(rule impI)
   apply(rule allI)
@@ -203,19 +203,18 @@ definition IsIndClass :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
   where IsIndClass_def : \<open>IsIndClass(P) == P(0) \<and> (\<forall>y. P(y) \<longrightarrow> P(succ(y)))\<close>
 
 lemma NatIsInd : \<open>IsIndClass(Nat)\<close>
-  apply (unfold IsIndClass_def)
-  apply (rule conjI)
-   apply (rule Nat0)
-  apply (rule NatSucc)
-  done
+proof (unfold IsIndClass_def)
+  from Nat0 and NatSucc 
+  show \<open>Nat(0) \<and> (\<forall>y. Nat(y) \<longrightarrow> Nat(succ(y)))\<close> by (rule conjI)
+qed
 
 definition Omega :: \<open>i\<close>
   where Omega_def : "Omega == { y \<in> Inf . Nat(y) }"
 
 lemma NatSubOmega : "\<And>x. Nat(x) \<Longrightarrow> x \<in> Omega"
-  apply (unfold Omega_def)
-  apply (rule CollectI)
-   apply (erule NatSubInf)
+  apply(unfold Omega_def)
+  apply(rule CollectI)
+   apply(erule NatSubInf)
   apply assumption
   done
 
