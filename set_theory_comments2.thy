@@ -111,9 +111,3 @@ apply(rule spec)
       apply assumption
   oops*)
 
-lemma wrongNatInInf: "⋀x. x ∈ Inf ⟹ Nat(x)"
-  apply (unfold Nat_def)
-  apply (unfold ClassInter_def)
-  apply(rule allI)
-  apply(rule impI)
-  oops (* lemma is false *)

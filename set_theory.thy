@@ -56,6 +56,12 @@ next
   show \<open>xa = k\<close> by (rule h)
 qed
 
+lemma UpairWE:
+  assumes \<open>B \<in> Upair(a, b)\<close>
+  shows \<open>B = a \<or> B = b\<close>
+(*proof -*)
+  oops
+
 lemma UnE :
   assumes \<open>x \<in> (a \<union> b)\<close>
   shows \<open>x \<in> a \<or> x \<in> b\<close>
@@ -68,6 +74,26 @@ proof -
     apply(erule subst[where b=b])
      apply(erule disjI2)
     done
+  have f:\<open>x \<in> \<Union>(Upair(a, b)) \<Longrightarrow> x \<in> a \<or> x \<in> b\<close>
+  proof (erule UnionE)
+    fix B
+    assume \<open>x \<in> B\<close>
+    assume \<open>B \<in> Upair(a, b)\<close> moreover
+    (*hence \<open>B = a \<or> B = b\<close> by UpairWE*)
+    from \<open>x \<in> B\<close> have \<open>x \<in> B \<or> x \<in> b\<close> by (rule disjI1)
+    from \<open>x \<in> B\<close> have \<open>x \<in> a \<or> x \<in> B\<close> by (rule disjI2)
+    have \<open>B = a \<Longrightarrow> x \<in> a \<or> x \<in> b\<close>
+    proof -
+      assume \<open>B = a\<close>
+      from this and \<open>x \<in> B \<or> x \<in> b\<close> show \<open>x \<in> a \<or> x \<in> b\<close> by (rule subst[where b=a])
+    qed moreover
+    have \<open>B = b \<Longrightarrow> x \<in> a \<or> x \<in> b\<close> 
+    proof -
+      assume \<open>B = b\<close>
+      from this and \<open>x \<in> a \<or> x \<in> B\<close> show \<open>x \<in> a \<or> x \<in> b\<close> by (rule subst[where b=b])
+    qed
+    ultimately show \<open>x \<in> a \<or> x \<in> b\<close> by (rule UpairE) 
+  qed
   from \<open>x\<in>(a\<union>b)\<close> have \<open>x \<in> \<Union>(Upair(a, b))\<close> by (unfold Un_def)
   thus \<open>x \<in> a \<or> x \<in> b\<close> by (rule f)
 qed
@@ -164,20 +190,13 @@ proof -
 qed
 
 
-lemma ww1':
+lemma ww1:
   assumes \<open>k \<in> x\<close>
       and \<open>m \<in> Upair(k, k)\<close>
     shows \<open>m \<in> x\<close>
 proof -
   from \<open>m \<in> Upair(k, k)\<close> have \<open>m = k\<close> by (rule inSing) 
   with \<open>k \<in> x\<close> show \<open>m \<in> x\<close> by (rule subst_elem)
-qed
-
-lemma ww1:\<open>k \<in> x \<Longrightarrow> m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close>
-proof (erule UpairE)
-  show \<open>k \<in> x \<Longrightarrow> m = k \<Longrightarrow> m \<in> x\<close> by (erule subst_elem)
-next
-  show \<open>k \<in> x \<Longrightarrow> m = k \<Longrightarrow> m \<in> x\<close> by (erule subst_elem)
 qed
 
 lemma ww:
@@ -190,92 +209,7 @@ next
   from \<open>k \<subseteq> x\<close> show \<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (rule subsetD)
 qed
 
-lemma we:
-  assumes \<open>k \<in> x\<close>
-  and \<open>k \<subseteq> x\<close>
-  shows \<open>m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x\<close>
-proof(erule disjE)
-  from \<open>k \<in> x\<close> show \<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule ww1)
-next
-  from \<open>k \<subseteq> x\<close> show \<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (rule subsetD)
-qed
-
-lemma lem1 :
-  assumes hh: \<open>m \<in> succ(k)\<close>
-  shows \<open>m \<in> Upair(k,k) \<or> m \<in> k\<close>
-proof -
-  from hh
-  have "m \<in> cons(k, k)" by (unfold succ_def)
-  hence "m \<in> Upair(k,k) \<union> k" by (unfold cons_def)
-  thus hh: "m \<in> Upair(k,k) \<or> m \<in> k"
-    apply (unfold Un_def)
-    apply (erule UnionE)
-    apply (erule UpairE)
-     apply(rule disjI1)
-     apply(erule subst)
-     apply assumption
-    apply(rule disjI2)
-    apply(erule subst)
-    apply assumption
-    done
-qed
 end
-
-
-lemma l3: \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
-  apply(rule subsetI)
-  apply(rule ReplaceI)
-  (*apply(rule iffD2)
-  (* apply(unfold Replace_def)
-   apply(rule replacement) *)
-   apply(rule Replace_iff)*
-  apply(unfold Bex_def)
-  (* How to specify metavariable with bounded variable? "let ?x = "
-     apply(rule exI[where x=x])  [of _ x]*)
-  apply(rule exI)
-  apply(erule conjI)
-  (* How to instantiate ?x8(x):=x  ? *)
-  apply(rule conjI) (* = split.*)*)
-    apply(rule refl)
-   apply assumption
-  apply(erule sym)
-  done
-
-lemma l3': \<open>S \<subseteq> {b . a \<in> S, a = b}\<close>
-proof (rule subsetI)
-  fix x
-  assume p2:\<open>x \<in> S\<close>
-  have p1:"x=x" by (rule refl)
-  have p3:"\<And>b. x=b \<Longrightarrow> b=x" by (rule sym)
-  from p1 and p2 and p3 show \<open>x \<in> {b . a \<in> S, a = b}\<close> by (rule ReplaceI)
-qed
-
-(* original theorem has no name, so I had to prove it... *)
-lemma l4_1:  \<open>P \<longleftrightarrow> P \<and> True\<close>
-  apply auto
-  done
-
-
-lemma l4: \<open>S = {a \<in> S. True}\<close>
-  (* apply(rule iffD2)
-  apply(rule extension)
-  apply(rule conjI) *)
-  apply(rule equalityI)
-  apply(unfold Collect_def)
-   apply(rule subst)
-(*proof -
-  let ?a3 = S*)
-
-    apply(rule Replace_cong)
-     apply(rule refl)
-(* how to forget assumption? *)
-    apply(rule l4_1)
-  apply(rule l3)
-  apply(fold Collect_def)
-  apply(rule Collect_subset)
-  done
-
-
 
 definition ClassInter :: \<open>(i\<Rightarrow>o)\<Rightarrow>(i\<Rightarrow>o)\<close> (*\<open>[ i \<Rightarrow> o, i ] \<Rightarrow> o\<close>*)
   where ClassInter_def : "ClassInter(P,x) == \<forall>y. P(y) \<longrightarrow> x\<in>y"
@@ -283,9 +217,13 @@ definition ClassInter :: \<open>(i\<Rightarrow>o)\<Rightarrow>(i\<Rightarrow>o)\
 definition Nat :: \<open>i\<Rightarrow>o\<close>
   where "Nat == ClassInter(Ind)"
 
-(*lemma IndInf : "Ind(Inf)"
-  apply(unfold Ind_def, rule infinity)
-  done*)
+lemma Nat_def2 : \<open>Nat(x) \<Longrightarrow> \<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close>
+proof -
+  fix x
+  assume \<open>Nat(x)\<close>
+  hence \<open>ClassInter(Ind, x)\<close> by (unfold Nat_def)
+  then show \<open>\<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close> by (unfold ClassInter_def)
+qed
 
 lemma lwe : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
   apply(unfold Nat_def)
@@ -306,35 +244,7 @@ definition IsIndClass :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
 definition IsSet :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
   where IsSet_def : "IsSet(P) == \<exists> y. \<forall> z. z \<in> y \<longleftrightarrow> P(z)"
 
-lemma Nat0 : "Nat(0)"
-  apply(unfold Nat_def)
-  apply(unfold ClassInter_def)
-  apply(rule allI)
-  apply(rule impI)
-  apply(unfold Ind_def)
-  apply(erule conjE)
-  apply assumption
-  done
-
-lemma Nat0' : "Nat(0)"
-proof (unfold Nat_def) show \<open>ClassInter(Ind, 0)\<close>
-  proof (unfold ClassInter_def) show \<open>\<forall>y. Ind(y) \<longrightarrow> 0 \<in> y\<close>
-    proof (rule allI) show \<open>\<And>y. Ind(y) \<longrightarrow> 0 \<in> y\<close>
-      proof (rule impI) show \<open>\<And>y. Ind(y) \<Longrightarrow> 0 \<in> y\<close>
-        proof (unfold Ind_def) show \<open>\<And>y. 0 \<in> y \<and> (\<forall>ya\<in>y. succ(ya) \<in> y) \<Longrightarrow> 0 \<in> y\<close>
-          proof (erule conjE) show
-                 \<open>\<And>y. 0 \<in> y \<Longrightarrow>
-                  \<forall>ya\<in>y. succ(ya) \<in> y \<Longrightarrow>
-                  0 \<in> y\<close>
-              by assumption
-          qed
-        qed
-      qed
-    qed
-  qed
-qed
-
-lemma Nat0'' : "Nat(0)"
+lemma Nat0 : \<open>Nat(0)\<close>
 proof -
   have \<open>\<And>y. 0 \<in> y \<and> (\<forall>ya\<in>y. succ(ya) \<in> y) \<Longrightarrow> 0 \<in> y\<close> by (erule conjE)
   hence  \<open>\<And>y. Ind(y) \<Longrightarrow> 0 \<in> y\<close> by (unfold Ind_def)
@@ -343,11 +253,6 @@ proof -
   hence \<open>ClassInter(Ind, 0)\<close> by (unfold ClassInter_def) 
   thus ?thesis by (unfold Nat_def)
 qed
-
-lemma zeroisempty : \<open>\<forall>x. \<not> x \<in> 0\<close>
-  apply(rule allI)
-  apply(rule not_mem_empty)
-  done
 
 lemma NatSu:
   fixes x w
@@ -403,13 +308,13 @@ lemma NatIsInd : \<open>IsIndClass(Nat)\<close>
   done
 
 lemma uio : \<open>IsTransClass(Nat)\<close>
-  apply (unfold IsTransClass_def)
+  apply(unfold IsTransClass_def)
   apply(rule allI)
   apply(rule impI)
   apply(rule allI)
   apply(rule impI)
-  apply (unfold Nat_def)
-  apply (unfold ClassInter_def)
+  apply(unfold Nat_def)
+  apply(unfold ClassInter_def)
   apply(rule allI)
   apply(rule impI)
   apply (unfold Ind_def)
@@ -426,9 +331,7 @@ lemma TheE : "\<And>x. (\<exists>!w. P(w)) \<Longrightarrow> P(x) \<Longrightarr
   apply assumption
   done
 
-(* "is a superset of the natural numbers" predicate *)
-definition SuperNatNumb :: \<open>(i\<Rightarrow>o)\<close>
-  where SuperNatNumb_def : "SuperNatNumb(x) == \<forall> y. Nat(y) \<longrightarrow> y\<in>x"
+
 
 lemma NatInInf: "\<And>x. Nat(x) \<Longrightarrow> x \<in> Inf"
   apply (unfold Nat_def)
@@ -436,13 +339,6 @@ lemma NatInInf: "\<And>x. Nat(x) \<Longrightarrow> x \<in> Inf"
   apply(rule mp)
    apply(erule spec)
   apply (rule IndInf)
-  done
-
-lemma SuperNatNumbInf : "SuperNatNumb(Inf)"
-  apply (unfold SuperNatNumb_def)
-  apply(rule allI)
-  apply(rule impI)
-  apply(erule NatInInf)
   done
 
 definition Omega :: \<open>i\<close>
@@ -463,173 +359,8 @@ lemma ExInf : \<open>\<exists>x. Ind(x)\<close>
 lemma IndOmega : \<open>Ind(Omega)\<close>
   sorry
 
-(* Some facts are about logic, not about ordered pairs.
-Some are about relations which are set. 
-It would be good to separate these cases.*)
-definition ReflRel :: \<open>(i=>i=>o)=>o\<close>
-  where ReflRel_def : "ReflRel(P) == \<forall>x. P(x,x)"
-definition SymRel :: \<open>(i=>i=>o)=>o\<close>
-  where SymRel_def : "SymRel(P) == \<forall>x. \<forall>y. P(x,y) \<longrightarrow> P(y,x)"
-definition TransRel :: \<open>(i=>i=>o)=>o\<close>
-  where TransRel_def : "TransRel(P) ==
- \<forall>x y z. P(x,y) \<and> P(y, z) \<longrightarrow> P(x,z)"
-
-definition uncarry :: \<open>(i=>i=>o)=>(i=>o)\<close>
-  where uncarry_def : "uncarry(P,p) == P(fst(p),snd(p))"
-definition carry :: \<open>(i\<Rightarrow>o) \<Rightarrow> (i\<Rightarrow>i\<Rightarrow>o)\<close>
-  where carry_def : "carry(P,x,y) == P(<x,y>)"
-
-
-definition Pres :: \<open>(i\<Rightarrow>i\<Rightarrow>o) \<Rightarrow>(i\<Rightarrow>i\<Rightarrow>o) \<Rightarrow>(i\<Rightarrow>i) \<Rightarrow> o\<close>
-  where "Pres(A,B,f) == \<forall>a0 a1. A(a0,a1)\<longrightarrow>B(f(a0),f(a1))"
-
-definition tofun :: \<open>i \<Rightarrow> (i\<Rightarrow>i)\<close>
-  where "tofun(f,x) == f`x"
-
-
-(* transitive closure*)
-(*
-definition TrCl :: \<open>(i\<Rightarrow>i\<Rightarrow>o) \<Rightarrow> (i\<Rightarrow>i\<Rightarrow>o)\<close>
-  where "TrCl(P,a,b) ==
- \<exists>\<alpha>. Ord(\<alpha>) \<and> (\<exists>f. fun(f) & dom(f) = \<alpha> & Pres(mem,P, \<lambda>x. f`x))"
-*)
-(* todo: translate statement from HOL to ZF *)
-(* every proper initial segment of ordinals is a set *)
-
-(* There exists subset-minimal inductive set. *)
-
-definition Irr :: \<open>(i=>i=>o)=>o\<close>
-  where Irr_def : "Irr(P) == \<forall>x. \<not>P(x,x)"
-
-definition AntiSym :: \<open>(i=>i=>o)=>o\<close>
-  where AntiSym_def : "AntiSym(P) == \<forall>x. \<forall>y. P(x,y) \<and> P(y,x) \<longrightarrow> x=y"
-
-definition SPO :: \<open>(i=>i=>o)=>o\<close>
-  where SPO_def : "SPO(R) == Irr(R)\<and>AntiSym(R)\<and>TransRel(R)"
-
-(* partial order *)
-definition PO :: \<open>(i=>i=>o)=>o\<close>
-  where PO_def : "PO(R) == ReflRel(R)\<and>AntiSym(R)\<and>TransRel(R)"
-
-(* equivalence relation *)
-definition ER :: \<open>(i=>i=>o)=>o\<close>
-  where ER_def : "ER(R) == ReflRel(R)\<and>SymRel(R)\<and>TransRel(R)"
-
-definition IsWeakMin :: \<open>(i=>i=>o)=>i\<Rightarrow>o\<close>
-  where IsWeakMin_def : "IsWeakMin(R,x) == \<forall>y. (R(x,y) \<or> x=y)"
-
-definition IsMin :: \<open>(i=>i=>o)=>i\<Rightarrow>o\<close>
-  where IsMin_def : "IsMin(R,x) == \<forall>y. R(x,y)"
-
-lemma WeakMinIsOnlyOne : \<open>AntiSym(R) \<Longrightarrow> \<exists>x. IsWeakMin(R,x) \<Longrightarrow> \<exists>!x. IsWeakMin(R,x)\<close>
-  apply(erule ex_ex1I)
-  apply(unfold IsWeakMin_def)
-
-  apply(rule disjE)
-   apply(erule spec)
-  prefer 2 apply assumption
-
-  apply(rule sym)
-  apply(rule disjE) (*[where Q="y=x"]*)
-    apply(rule spec)
-    prefer 3    apply assumption
-   apply assumption
-  apply(fold IsWeakMin_def)
-
-  apply(unfold AntiSym_def)
-  apply(rule mp)
-   apply(rule spec)
-   apply(rule spec)
-   apply assumption
-  apply(rule conjI)
-   apply assumption
-  apply assumption
-  done
-
-lemma MinIsOnlyOne : \<open>AntiSym(R) \<Longrightarrow> \<exists>x. IsMin(R,x) \<Longrightarrow> \<exists>!x. IsMin(R,x)\<close>
-  apply(erule ex_ex1I)
-  apply(unfold IsMin_def)
-  apply(unfold AntiSym_def)
-  apply(rule mp)
-   apply(rule spec)
-   apply(rule spec)
-   apply assumption
-  apply(rule conjI)
-  apply(erule spec)
-  apply(erule spec)
-  done
-
-(*lemma IndPO*)
-
-lemma ExMinInd : \<open>\<exists>!x. ( Ind(x) \<and> (\<forall>y. Ind(y) \<longrightarrow> x\<subseteq>y) )\<close>
-  apply(rule ex_ex1I)
-   apply(rule exI)
-   apply(rule conjI)
-    apply(rule IndOmega)
-  sorry
-
-(*If there exists two subset-minimal sets  the they are equal.*)
-
-
-lemma NatI : "\<And>x. Nat(x) \<Longrightarrow> x\<in>The(SuperNatNumb)"
-  apply (unfold the_def)
-  apply(rule UnionI)
-   apply(rule ReplaceI)
-  prefer 4
-(*     apply(erule NatInInf) wrong!
-    apply(rule SuperNatNumbInf)
-
-     apply assumption *)
-  oops
-
-
 lemma NatIsInd2: "omega = nat"
   oops
-
-
-lemma de_Morgan:
-  assumes "\<not> (\<forall>x. P(x))"
-  shows "\<exists>x. \<not> P(x)"
-proof (rule classical)
-  assume "\<not> (\<exists>x. \<not> P(x))"
-  have "\<forall>x. P(x)"
-  proof
-    fix x show "P(x)"
-    proof (rule classical)
-      assume "\<not> P(x)"
-      then have "\<exists>x. \<not> P(x)" ..
-      with \<open>\<not>(\<exists>x. \<not> P(x))\<close> show ?thesis by contradiction
-    qed
-  qed
-  with \<open>\<not> (\<forall>x. P(x))\<close> show ?thesis by contradiction
-qed
-
-theorem Drinker's_Principle: "\<exists>x. drunk(x) \<longrightarrow> (\<forall>x. drunk(x))"
-proof cases
-  assume "\<forall>x. drunk(x)"
-  then have "drunk(a) \<longrightarrow> (\<forall>x. drunk(x))" for a ..
-  then show ?thesis ..
-next
-  assume "\<not> (\<forall>x. drunk(x))"
-  then have "\<exists>x. \<not> drunk(x)" by (rule de_Morgan)
-  then obtain a where "\<not> drunk(a)" ..
-  have "drunk(a) \<longrightarrow> (\<forall>x. drunk(x))"
-  proof
-    assume "drunk(a)"
-    with \<open>\<not> drunk(a)\<close> show "\<forall>x. drunk(x)" by contradiction
-  qed
-  then show ?thesis ..
-qed
-
-lemma lwe2 : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
-  apply(unfold Nat_def)
-  apply(rule allI)
-  apply(rule impI)
-  apply(unfold ClassInter_def)
-  apply(rule mp)
-   apply(erule spec)
-  apply(rule IndInf)
-  done
 
 lemma lwe3 : \<open>\<And>x. Nat(x) \<Longrightarrow> x\<in>Inf\<close>
 proof (unfold Nat_def)
@@ -649,48 +380,5 @@ proof (rule allI)
   fix x
   from lwe3 show \<open>(Nat(x) \<longrightarrow> x\<in>Inf)\<close> by (rule impI)
 qed
-
-lemma lwe4' : \<open>\<forall>x. (Nat(x) \<longrightarrow> x\<in>Inf)\<close>
-proof 
-  fix x
-  show \<open>(Nat(x) \<longrightarrow> x\<in>Inf)\<close>
-  proof
-    assume \<open>Nat(x)\<close>
-    hence \<open>ClassInter(Ind, x)\<close> by (unfold Nat_def)
-    hence \<open>\<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close> by (unfold ClassInter_def)
-    hence \<open>Ind(Inf) \<longrightarrow> x \<in> Inf\<close> by (rule spec)
-    hence p:\<open>Ind(Inf) \<Longrightarrow> x \<in> Inf\<close> by (rule mp)
-    from IndInf show \<open>x \<in> Inf\<close> by (rule p)
-  qed
-qed
-
-(* how to fold something as ... *)
-lemma SPO2PO : \<open>SPO(R) \<Longrightarrow> PO(\<lambda>x y.(R(x,y)\<or>x=y))\<close>
-(*(*apply(unfold PO_def)
-  apply(rule conjI)*)
-proof
-assume "SPO(R)"
-  have qki:"SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"
-  proof
-    apply(unfold ReflRel_def)
-    apply auto (*  apply (rule allI) *)
-    done
-  ..
-(* next by qki*)
-(*  then have "SPO(R) \<Longrightarrow> ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"*)
-    apply(unfold ReflRel_def)
-(*  with qki show ?thesis
-  from qki show "SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y"
-from qki show "SPO(R) \<Longrightarrow>ReflRel(\<lambda>x y. R(x, y) \<or> x = y)"
-    apply(unfold ReflRel)
-    by qki
-  apply assumption
-  qed*)*)
-  oops
-
-(* use of LEM *)
-lemma PO2SPO : \<open>PO(R) \<Longrightarrow> SPO(\<lambda>x y.(R(x,y)\<and>x\<noteq>y))\<close>
-  oops
-
 
 end
