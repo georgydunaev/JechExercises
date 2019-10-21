@@ -2,8 +2,8 @@ theory set_theory imports trivia classical_axioms fol_theorems
 begin
 
 (* preliminaries *)
-definition Ind :: "i\<Rightarrow>o"
-  where Ind_def : "Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)"
+definition Ind :: \<open>i\<Rightarrow>o\<close>
+  where Ind_def : \<open>Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close>
 
 lemma IndInf : \<open>Ind(Inf)\<close>
   by(unfold Ind_def, rule infinity)
@@ -21,7 +21,7 @@ proof -
     by (fold Ball_def)
   with c0 have \<open>0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close>
     by (rule conjI)
-  thus "Ind(x)" by (fold Ind_def)
+  thus \<open>Ind(x)\<close> by (fold Ind_def)
 qed
 
 lemma IndE1 :
@@ -64,7 +64,7 @@ begin
 lemma notWinW :
   assumes y : \<open>W \<in> W\<close> 
   shows \<open>False\<close>
-proof (rule notE[where P="W\<in>W"])
+proof (rule notE[where P=\<open>W \<in> W\<close>])
   from y have \<open>W \<in> {x \<in> S . x \<notin> x}\<close> by (unfold W_def)
   then show \<open>W \<notin> W\<close> by (rule CollectD2)
 next
@@ -79,7 +79,7 @@ proof (rule notI)
   hence \<open>W \<in> Pow(S)\<close> by (rule PowI)
   with \<open>Pow(S) \<subseteq> S\<close> have \<open>W \<in> S\<close> by (rule subsetD)
   show \<open>False\<close>
-  proof (rule case_split[where P="W\<in>W"])
+  proof (rule case_split[where P=\<open>W \<in> W\<close>])
     show \<open>W \<in> W \<Longrightarrow> False\<close> by (rule notWinW)
   next
     from \<open>W \<in> S\<close> have \<open>{x \<in> S . x \<notin> x} \<in> S\<close> by (unfold W_def) moreover
@@ -99,15 +99,14 @@ context
   fixes x
   assumes a:\<open>Ind(x)\<close>
 begin
-lemma lem0 : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
+lemma subsetsu : \<open>\<And>xa. xa \<in> {y \<in> x . y \<subseteq> x} \<Longrightarrow>
           succ(xa) \<in> {y \<in> x . y \<subseteq> x}\<close> 
 proof -
   fix k
   assume h:\<open>k \<in> {y \<in> x . y \<subseteq> x}\<close>
-  from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A="x"])
-  from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P="\<lambda>w. w\<subseteq>x"])
+  from h have h1:\<open>k \<in> x\<close> by (rule CollectD1[where A=\<open>x\<close>])
+  from h have h2:\<open>k \<subseteq> x\<close> by (rule CollectD2[where P=\<open>\<lambda>w. w\<subseteq>x\<close>])
   from a and h1 have \<open>succ(k) \<in> x\<close> by (rule IndE2R)
-  (*\<open>k \<subseteq> x\<close>*)
   have \<open>\<And>xa. xa \<in> succ(k) \<Longrightarrow> xa \<in> x\<close>
   proof -
     fix xa
@@ -124,7 +123,7 @@ proof -
   qed
   hence \<open>succ(k) \<subseteq> x\<close> by (rule subsetI)
   with \<open>succ(k) \<in> x\<close>
-  show \<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule CollectI[where P="\<lambda>y. y\<subseteq>x"])
+  show \<open>succ(k) \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule CollectI[where P=\<open>\<lambda>y. y\<subseteq>x\<close>])
 qed  
 
 theorem ex1_3:
@@ -134,16 +133,16 @@ proof -
   have \<open>0 \<in> x\<close> by (rule IndE1)
   have \<open>0 \<subseteq> x\<close> by (rule empty_subsetI)
   with \<open>0 \<in> x\<close> have d:\<open>0 \<in> {y \<in> x . y \<subseteq> x}\<close> by (rule CollectI)
-  from d and lem0 show \<open>Ind({y\<in>x. y\<subseteq>x})\<close> by (rule IndI)
+  from d and subsetsu show \<open>Ind({y\<in>x. y\<subseteq>x})\<close> by (rule IndI)
 qed
 
 end
 
 definition ClassInter :: \<open>(i\<Rightarrow>o)\<Rightarrow>(i\<Rightarrow>o)\<close>
-  where ClassInter_def : "ClassInter(P,x) == \<forall>y. P(y) \<longrightarrow> x\<in>y"
+  where ClassInter_def : \<open>ClassInter(P,x) == \<forall>y. P(y) \<longrightarrow> x\<in>y\<close>
 
 definition Nat :: \<open>i\<Rightarrow>o\<close>
-  where "Nat == ClassInter(Ind)"
+  where \<open>Nat == ClassInter(Ind)\<close>
 
 lemma NatSubInf : \<open>\<And>x. Nat(x) \<Longrightarrow> x\<in>Inf\<close>
 proof (unfold Nat_def)
@@ -151,10 +150,10 @@ proof (unfold Nat_def)
   assume p0:\<open>ClassInter(Ind, x)\<close>
   show \<open>x\<in>Inf\<close>
   proof -
-    from p0 have "\<forall>y. Ind(y) \<longrightarrow> x \<in> y" by (unfold ClassInter_def)
-    then have "Ind(Inf) \<longrightarrow> x \<in> Inf" by (rule spec)
-    then have p3:"Ind(Inf) \<Longrightarrow> x \<in> Inf" by (rule mp)
-    from IndInf show p4:"x \<in> Inf" by (rule p3)
+    from p0 have \<open>\<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close> by (unfold ClassInter_def)
+    hence \<open>Ind(Inf) \<longrightarrow> x \<in> Inf\<close> by (rule spec)
+    hence p3:\<open>Ind(Inf) \<Longrightarrow> x \<in> Inf\<close> by (rule mp)
+    from IndInf show p4:\<open>x \<in> Inf\<close> by (rule p3)
   qed
 qed
 
@@ -164,7 +163,7 @@ proof (rule allI)
 qed
 
 definition IsTransClass :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
-  where IsTransClass_def : "IsTransClass(P) == \<forall>y. P(y) \<longrightarrow> (\<forall>z. z\<in>y \<longrightarrow> P(z))"
+  where IsTransClass_def : \<open>IsTransClass(P) == \<forall>y. P(y) \<longrightarrow> (\<forall>z. z\<in>y \<longrightarrow> P(z))\<close>
 
 lemma Nat0 : \<open>Nat(0)\<close>
 proof -
@@ -178,9 +177,9 @@ qed
 
 lemma NatSu:
   fixes x w
-  assumes a:"\<forall>y. Ind(y) \<longrightarrow> x \<in> y"
-  assumes b:"Ind(w)"
-  shows "succ(x) \<in> w"
+  assumes a:\<open>\<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close>
+  assumes b:\<open>Ind(w)\<close>
+  shows \<open>succ(x) \<in> w\<close>
 proof -
   from b have j:\<open>\<And>xa. xa \<in> w \<Longrightarrow> succ(xa) \<in> w\<close> by (rule IndE2R)
   from a have \<open>Ind(w) \<longrightarrow> x \<in> w\<close> by (rule spec)
@@ -191,10 +190,8 @@ qed
 lemma NatSucc : \<open>\<forall>x. Nat(x) \<longrightarrow> Nat(succ(x))\<close>
   apply(unfold Nat_def)
   apply(unfold ClassInter_def)
-  apply(rule allI)
-  apply(rule impI)
-  apply(rule allI)
-  apply(rule impI)
+  apply(rule allI[OF impI])
+  apply(rule allI[OF impI])
   apply(erule NatSu)
   apply assumption
   done
@@ -209,9 +206,9 @@ proof (unfold IsIndClass_def)
 qed
 
 definition Omega :: \<open>i\<close>
-  where Omega_def : "Omega == { y \<in> Inf . Nat(y) }"
+  where Omega_def : \<open>Omega == { y \<in> Inf . Nat(y) }\<close>
 
-lemma NatSubOmega : "\<And>x. Nat(x) \<Longrightarrow> x \<in> Omega"
+lemma NatSubOmega : \<open>\<And>x. Nat(x) \<Longrightarrow> x \<in> Omega\<close>
   apply(unfold Omega_def)
   apply(rule CollectI)
    apply(erule NatSubInf)
