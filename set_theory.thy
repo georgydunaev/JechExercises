@@ -1,4 +1,4 @@
-theory set_theory imports trivia classical_axioms fol_theorems
+theory set_theory imports trivia
 begin
 
 (* preliminaries *)
@@ -111,8 +111,8 @@ proof -
   proof -
     fix xa
     assume \<open>xa \<in> succ(k)\<close>
-    then have \<open>xa = k \<or> xa \<in> k\<close> by (rule inSucc)
-    then show \<open>xa \<in> x\<close>
+    hence \<open>xa = k \<or> xa \<in> k\<close> by (rule SuccE)
+    thus \<open>xa \<in> x\<close>
     proof (rule disjE)
       assume \<open>xa = k\<close>
       with h1 show \<open>xa \<in> x\<close> by (rule subst_elem)

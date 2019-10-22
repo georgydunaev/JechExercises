@@ -253,4 +253,25 @@ lemma IndOmega : \<open>Ind(Omega)\<close>
 lemma NatIsInd2: "omega = nat"
   oops
 
+
+lemma ww1':
+  assumes \<open>k \<in> x\<close>
+      and \<open>m \<in> Upair(k, k)\<close>
+    shows \<open>m \<in> x\<close>
+proof -
+  from \<open>m \<in> Upair(k, k)\<close> have \<open>m = k\<close> by (rule upair.UpairE) 
+  with \<open>k \<in> x\<close> show \<open>m \<in> x\<close> by (rule subst_elem)
+qed
+
+lemma ww:
+  assumes \<open>k \<in> x\<close>
+  and \<open>k \<subseteq> x\<close>
+  shows \<open>m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x\<close>
+proof(erule disjE)
+  from \<open>k \<in> x\<close> show \<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule ww1')
+next
+  from \<open>k \<subseteq> x\<close> show \<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (rule subsetD)
+qed
+
+
 end

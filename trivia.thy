@@ -1,15 +1,6 @@
 theory trivia imports ZF
 begin
 
-lemma inSing : \<open>xa \<in> Upair(k, k) \<Longrightarrow> xa = k\<close>
-proof (erule UpairE)
-  assume h:\<open>xa = k\<close> 
-  show \<open>xa = k\<close> by (rule h)
-next
-  assume h:\<open>xa = k\<close> 
-  show \<open>xa = k\<close> by (rule h)
-qed
-
 lemma UnE :
   assumes \<open>x \<in> (a \<union> b)\<close>
   shows \<open>x \<in> a \<or> x \<in> b\<close>
@@ -46,7 +37,7 @@ proof -
   thus \<open>x \<in> a \<or> x \<in> b\<close> by (rule f)
 qed
 
-lemma inSucc :
+lemma SuccE :
   fixes xa and k
   assumes \<open>xa \<in> succ(k)\<close>
   shows \<open>xa = k \<or> xa \<in> k\<close>
@@ -59,28 +50,10 @@ proof -
     show \<open>xa \<in> k \<Longrightarrow> xa = k \<or> xa \<in> k\<close> by (rule disjI2)
   next
     assume \<open>xa \<in> Upair(k, k)\<close>
-    hence \<open>xa = k\<close> by (rule inSing)
+    hence \<open>xa = k\<close> by (rule upair.UpairE)
     thus \<open>xa = k \<or> xa \<in> k\<close> by (rule disjI1)
   qed
 qed
 
-lemma ww1:
-  assumes \<open>k \<in> x\<close>
-      and \<open>m \<in> Upair(k, k)\<close>
-    shows \<open>m \<in> x\<close>
-proof -
-  from \<open>m \<in> Upair(k, k)\<close> have \<open>m = k\<close> by (rule inSing) 
-  with \<open>k \<in> x\<close> show \<open>m \<in> x\<close> by (rule subst_elem)
-qed
-
-lemma ww:
-  assumes \<open>k \<in> x\<close>
-  and \<open>k \<subseteq> x\<close>
-  shows \<open>m \<in> Upair(k, k) \<or> m \<in> k \<Longrightarrow> m \<in> x\<close>
-proof(erule disjE)
-  from \<open>k \<in> x\<close> show \<open>m \<in> Upair(k, k) \<Longrightarrow> m \<in> x\<close> by (rule ww1)
-next
-  from \<open>k \<subseteq> x\<close> show \<open>m \<in> k \<Longrightarrow> m \<in> x\<close> by (rule subsetD)
-qed
-
 end
+
