@@ -1,7 +1,13 @@
-theory set_theory imports trivia
+(*  Title:       Jech Exercises
+    Author:      Georgy Dunaev <georgedunaev at gmail.com>, 2019
+    Maintainer:  Georgy Dunaev <georgedunaev at gmail.com>
+*)
+
+section "Jech Exrecises"
+theory JechExercises imports trivia
 begin
 
-(* preliminaries *)
+text \<open>preliminaries\<close>
 definition Ind :: \<open>i\<Rightarrow>o\<close>
   where Ind_def : \<open>Ind(x) == 0 \<in> x \<and> (\<forall>y\<in>x. succ(y) \<in> x)\<close>
 
@@ -51,11 +57,12 @@ proof -
   thus \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
 qed
 
-(* ex 1.1: Verify (a, b) = (c, d) if and only if a = c and b = d. *)
+text \<open>ex 1.1: Verify (a, b) = (c, d) if and only if a = c and b = d.\<close>
+
 theorem ex_1_1 : \<open><a,b> = <c,d> \<longleftrightarrow> a=c & b=d\<close>
   by (rule pair.Pair_iff)
 
-(* ex 1.2: There is no set X such that Pow(X)\<subseteq>X. *)
+text \<open>ex 1.2: There is no set X such that $Pow(X)\subseteq X$.\<close>
 context
   fixes S
   fixes W defines W_def : \<open>W == {x\<in>S. x\<notin>x}\<close>
@@ -93,8 +100,8 @@ proof (rule notI)
 qed
 end
 
-(* ex 1.3: If X is inductive, then the set {x \<in> X : x \<subseteq> X} is inductive. Hence N is
-transitive, and for each n, n = {m \<in> N : m < n}. *)
+text \<open>ex 1.3: If X is inductive, then the set $\{x \in X : x \subseteq X\}$ is inductive. Hence N is
+transitive, and for each n, $n = \{m \in N : m < n\}$.\<close>
 context
   fixes x
   assumes a:\<open>Ind(x)\<close>
