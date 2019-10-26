@@ -55,5 +55,31 @@ proof -
   qed
 qed
 
+lemma AeqUPA:\<open>A = \<Union>Pow(A)\<close>
+proof (rule equalityI)
+  have \<open>\<And>x. x \<in> \<Union>Pow(A) \<Longrightarrow> x \<in> A\<close>
+  proof -
+    fix x
+    assume \<open>x \<in> \<Union>Pow(A)\<close>
+    from \<open>x \<in> \<Union>Pow(A)\<close> obtain B
+      where p1:\<open>x \<in> B\<close> and p2:\<open>B \<in> Pow(A)\<close>
+      by (erule UnionE)
+    from \<open>B \<in> Pow(A)\<close> have \<open>B \<subseteq> A\<close> by (rule PowD)
+    from \<open>x \<in> B\<close> and \<open>B \<subseteq> A\<close> show \<open>x \<in> A\<close> by (rule rev_subsetD)
+  qed
+  then show \<open>\<Union>Pow(A) \<subseteq> A\<close>
+    by (rule subsetI)
+next
+  have \<open>\<And>x. x \<in> A \<Longrightarrow> x \<in> \<Union>Pow(A)\<close>
+  proof -
+    fix x
+    assume \<open>x \<in> A\<close>
+    have \<open>A \<in> Pow(A)\<close> by auto
+    from \<open>A \<in> Pow(A)\<close> and \<open>x \<in> A\<close>
+    show \<open>x \<in> \<Union>Pow(A)\<close> by (rule UnionI)
+  qed
+  then show \<open>A \<subseteq> \<Union>Pow(A)\<close> by (rule subsetI)
+qed
+
 end
 
