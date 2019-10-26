@@ -1,0 +1,4 @@
+To build proof document use
+```
+isabelle build -D .
+```
