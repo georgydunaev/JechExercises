@@ -195,13 +195,20 @@ proof -
 qed
 
 lemma NatSucc : \<open>\<forall>x. Nat(x) \<longrightarrow> Nat(succ(x))\<close>
-  apply(unfold Nat_def)
-  apply(unfold ClassInter_def)
-  apply(rule allI[OF impI])
-  apply(rule allI[OF impI])
-  apply(erule NatSu)
-  apply assumption
-  done
+proof (rule allI[OF impI])
+  fix x
+  assume \<open>Nat(x)\<close>
+  hence \<open>ClassInter(Ind)(x)\<close> by (unfold Nat_def)
+  hence \<open>\<forall>y. Ind(y) \<longrightarrow> x\<in>y\<close> by (unfold ClassInter_def)
+  have \<open>\<forall>y. Ind(y) \<longrightarrow> succ(x)\<in>y\<close>
+  proof (rule allI[OF impI])
+    fix y
+    assume \<open>Ind(y)\<close>
+    with \<open>\<forall>y. Ind(y) \<longrightarrow> x\<in>y\<close> show \<open>succ(x)\<in>y\<close> by (rule NatSu)
+  qed
+  hence \<open>ClassInter(Ind)(succ(x))\<close> by (fold ClassInter_def)
+  then show \<open>Nat(succ(x))\<close> by (fold Nat_def)
+qed
 
 definition IsIndClass :: \<open>(i\<Rightarrow>o)\<Rightarrow>o\<close>
   where IsIndClass_def : \<open>IsIndClass(P) == P(0) \<and> (\<forall>y. P(y) \<longrightarrow> P(succ(y)))\<close>
