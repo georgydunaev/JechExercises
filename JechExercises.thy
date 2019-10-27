@@ -216,10 +216,12 @@ definition Omega :: \<open>i\<close>
   where Omega_def : \<open>Omega == { y \<in> Inf . Nat(y) }\<close>
 
 lemma NatSubOmega : \<open>\<And>x. Nat(x) \<Longrightarrow> x \<in> Omega\<close>
-  apply(unfold Omega_def)
-  apply(rule CollectI)
-   apply(erule NatSubInf)
-  apply assumption
-  done
+proof -
+  fix x
+  assume \<open>Nat(x)\<close>
+  hence \<open>x \<in> Inf\<close> by (rule NatSubInf)
+  from \<open>x \<in> Inf\<close> and \<open>Nat(x)\<close> have \<open>x \<in> {x\<in>Inf. Nat(x)}\<close> by (rule CollectI)
+  thus \<open>x \<in> Omega\<close> by (fold Omega_def)
+qed
 
 end
