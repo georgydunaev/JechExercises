@@ -1,40 +1,24 @@
 theory trivia imports ZF
 begin
 
+lemma In_sound_right : \<open>x\<in>A \<Longrightarrow> A=B \<Longrightarrow> x\<in>B\<close>
+  apply (erule subst[where b=B])
+  apply assumption
+  done
+
 lemma UnE :
   assumes \<open>x \<in> (a \<union> b)\<close>
   shows \<open>x \<in> a \<or> x \<in> b\<close>
 proof -
-  have f:\<open>x \<in> \<Union>(Upair(a, b)) \<Longrightarrow> x \<in> a \<or> x \<in> b\<close>
-    apply(erule UnionE)
-    apply(erule UpairE)
-    apply(erule subst[where b=a])
-     apply(erule disjI1)
-    apply(erule subst[where b=b])
-     apply(erule disjI2)
-    done
-  have f:\<open>x \<in> \<Union>(Upair(a, b)) \<Longrightarrow> x \<in> a \<or> x \<in> b\<close>
-  proof (erule UnionE)
-    fix B
-    assume \<open>x \<in> B\<close>
-    assume \<open>B \<in> Upair(a, b)\<close> moreover
-    (*hence \<open>B = a \<or> B = b\<close> by UpairWE*)
-    from \<open>x \<in> B\<close> have \<open>x \<in> B \<or> x \<in> b\<close> by (rule disjI1)
-    from \<open>x \<in> B\<close> have \<open>x \<in> a \<or> x \<in> B\<close> by (rule disjI2)
-    have \<open>B = a \<Longrightarrow> x \<in> a \<or> x \<in> b\<close>
-    proof -
-      assume \<open>B = a\<close>
-      from this and \<open>x \<in> B \<or> x \<in> b\<close> show \<open>x \<in> a \<or> x \<in> b\<close> by (rule subst[where b=a])
-    qed moreover
-    have \<open>B = b \<Longrightarrow> x \<in> a \<or> x \<in> b\<close> 
-    proof -
-      assume \<open>B = b\<close>
-      from this and \<open>x \<in> a \<or> x \<in> B\<close> show \<open>x \<in> a \<or> x \<in> b\<close> by (rule subst[where b=b])
-    qed
-    ultimately show \<open>x \<in> a \<or> x \<in> b\<close> by (rule UpairE) 
-  qed
   from \<open>x\<in>(a\<union>b)\<close> have \<open>x \<in> \<Union>(Upair(a, b))\<close> by (unfold Un_def)
-  thus \<open>x \<in> a \<or> x \<in> b\<close> by (rule f)
+  from \<open>x \<in> \<Union>(Upair(a, b))\<close> obtain B
+    where p1:\<open>x \<in> B\<close> and p2:\<open>B \<in> Upair(a, b)\<close>
+    by (erule UnionE)
+  from \<open>B \<in> Upair(a, b)\<close> have \<open>B = a \<or> B = b\<close> by (rule UpairE, auto)
+  from p1 have l1:\<open>B = a \<Longrightarrow> x \<in> a\<close> by (rule In_sound_right)
+  from p1 have l2:\<open>B = b \<Longrightarrow> x \<in> b\<close> by (rule In_sound_right)
+  from \<open>B = a \<or> B = b\<close> and l1 and l2
+  show \<open>x \<in> a \<or> x \<in> b\<close> by (rule disj_imp_disj)
 qed
 
 lemma SuccE :
