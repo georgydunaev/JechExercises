@@ -253,27 +253,32 @@ proof (rule equalityI)
     fix x
     assume a1:\<open>x \<in> r `` (\<Union>A)\<close>
     hence a2:\<open>x \<in> {y \<in> range(r) . \<exists>x\<in>\<Union>A. \<langle>x, y\<rangle> \<in> r}\<close> by (unfold image_def)
-    from a2 have a3:\<open>x \<in> range(r)\<close> by (rule CollectE)
+(*    from a2 have a3:\<open>x \<in> range(r)\<close> by (rule CollectE)*)
     from a2 have a4:\<open>\<exists>xa\<in>\<Union>A. \<langle>xa, x\<rangle> \<in> r\<close> by (rule CollectE)
     from a4 obtain xa where b1:"xa\<in>\<Union>A" and b2:"\<langle>xa, x\<rangle> \<in> r" by (rule bexE)
     from b1 obtain y where q1:\<open>xa\<in>y\<close> and q2:\<open>y\<in>A\<close> by (rule UnionE)
     from b2 and q1 have c1:\<open>x \<in> r `` y\<close>  by (rule imageI)
     from b2 have e1:\<open>x \<in> range(r)\<close> by (rule rangeI)
-    from q2 and c1 show \<open>x \<in> (\<Union>x\<in>A. r `` x)\<close> by (rule UN_I)
+(*    from q2 and c1 show \<open>x \<in> (\<Union>x\<in>A. r `` x)\<close> by (rule UN_I)*)
+    from q2 and c1 have q:\<open>x \<in> (\<Union>x\<in>A. r `` x)\<close> by (rule UN_I)
+    show \<open>x \<in> (\<Union>x\<in>A. r `` x)\<close> by (rule q)
   qed
-  show \<open>r `` (\<Union>A) \<subseteq> (\<Union>x\<in>A. r `` x)\<close>
-  proof (rule subsetI)
-    show \<open>\<And>x. x \<in> r `` (\<Union>A) \<Longrightarrow>
-         x \<in> (\<Union>x\<in>A. r `` x)\<close>
-      sorry
-  qed
+  thus \<open>r `` (\<Union>A) \<subseteq> (\<Union>x\<in>A. r `` x)\<close> by (rule subsetI)
 next
-  show \<open>(\<Union>x\<in>A. r `` x) \<subseteq> r `` (\<Union>A)\<close>
+  have l2:\<open>\<And>x. x \<in> (\<Union>x\<in>A. r `` x) \<Longrightarrow> x \<in> r `` (\<Union>A)\<close>
   proof -
-    
-    show ?thesis
-      sorry
+    fix x
+    assume a0:\<open>x \<in> (\<Union>x\<in>A. r `` x)\<close> 
+    (*! have \<open>x \<in> (\<Union>x\<in>A. r `` x)\<close> apply standard sorry !*)
+    from a0 obtain B where \<open>B \<in> {r `` x . x \<in> A}\<close> and \<open>x \<in> B\<close> by standard
+    (*! have \<open>B \<in> {r `` x . x \<in> A}\<close> apply standard sorry !*)
+    from \<open>B \<in> {r `` x . x \<in> A}\<close> obtain g where \<open>B = r `` g\<close> and \<open>g \<in> A\<close> by standard
+
+    have \<open>x \<in> r `` (\<Union>A)\<close> 
+      apply standard
+    show \<open>x \<in> r `` (\<Union>A)\<close> sorry
   qed
+  thus \<open>(\<Union>x\<in>A. r `` x) \<subseteq> r `` (\<Union>A)\<close> by (rule subsetI)
 qed
 (* comments:
 (*
