@@ -50,10 +50,10 @@ proof -
 qed
 
 lemma IndE2R :
-  assumes a:\<open>Ind(x)\<close>
+  assumes \<open>Ind(x)\<close>
   shows \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close>
 proof -
-  from a have \<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (rule IndE2)
+  from \<open>Ind(x)\<close> have \<open>\<forall>xa. xa \<in> x \<longrightarrow> succ(xa) \<in> x\<close> by (rule IndE2)
   thus \<open>\<And>xa. xa \<in> x \<Longrightarrow> succ(xa) \<in> x\<close> by (rule spec[THEN impE])
 qed
 
@@ -230,5 +230,93 @@ proof -
   from \<open>x \<in> Inf\<close> and \<open>Nat(x)\<close> have \<open>x \<in> {x\<in>Inf. Nat(x)}\<close> by (rule CollectI)
   thus \<open>x \<in> Omega\<close> by (fold Omega_def)
 qed
+
+notepad
+begin
+assume a: A and b: B
+thm conjI
+thm conjI [of A B] (*— instantiation*)
+thm conjI [of A B, OF a b] (*— instantiation and composition*)
+thm conjI [OF a b] (*— composition via unification (trivial)*)
+(*thm conjI [OF "A" "B"]*)
+thm conjI [OF disjI1]
+end
+
+(* image f of union is the union of images f *)
+(* lemma image_UN: "r `` (\<Union>x\<in>A. B(x)) = (\<Union>x\<in>A. r `` B(x))" *)
+
+lemma "r``(\<Union>A) = (\<Union>x\<in>A. r``x)"
+proof (rule equalityI)
+  have l1:\<open>\<And>x. x \<in> r `` (\<Union>A) \<Longrightarrow>
+         x \<in> (\<Union>x\<in>A. r `` x)\<close>
+  proof -
+    fix x
+    assume a1:\<open>x \<in> r `` (\<Union>A)\<close>
+    hence a2:\<open>x \<in> {y \<in> range(r) . \<exists>x\<in>\<Union>A. \<langle>x, y\<rangle> \<in> r}\<close> by (unfold image_def)
+    from a2 have a3:\<open>x \<in> range(r)\<close> by (rule CollectE)
+    from a2 have a4:\<open>\<exists>xa\<in>\<Union>A. \<langle>xa, x\<rangle> \<in> r\<close> by (rule CollectE)
+    from a4 obtain xa where b1:"xa\<in>\<Union>A" and b2:"\<langle>xa, x\<rangle> \<in> r" by (rule bexE)
+    from b1 obtain y where q1:\<open>xa\<in>y\<close> and q2:\<open>y\<in>A\<close> by (rule UnionE)
+    from b2 and q1 have c1:\<open>x \<in> r `` y\<close>  by (rule imageI)
+    from b2 have e1:\<open>x \<in> range(r)\<close> by (rule rangeI)
+    from q2 and c1 show \<open>x \<in> (\<Union>x\<in>A. r `` x)\<close> by (rule UN_I)
+  qed
+  show \<open>r `` (\<Union>A) \<subseteq> (\<Union>x\<in>A. r `` x)\<close>
+  proof (rule subsetI)
+    show \<open>\<And>x. x \<in> r `` (\<Union>A) \<Longrightarrow>
+         x \<in> (\<Union>x\<in>A. r `` x)\<close>
+      sorry
+  qed
+next
+  show \<open>(\<Union>x\<in>A. r `` x) \<subseteq> r `` (\<Union>A)\<close>
+  proof -
+    
+    show ?thesis
+      sorry
+  qed
+qed
+(* comments:
+(*
+    from \<open>x \<in> \<Union>Pow(A)\<close> obtain B 
+      where p1:\<open>x \<in> B\<close> and p2:\<open>B \<in> Pow(A)\<close>
+      by (erule UnionE)
+*)
+    have \<open>x \<in> {y \<in> range(r) . \<exists>x\<in>\<Union>A. \<langle>x, y\<rangle> \<in> r}\<close>
+      apply (rule CollectI)
+      sorry
+    
+    have \<open>x \<in> r `` (\<Union>A)\<close>
+      apply (unfold image_def)
+      sorry
+...
+    show \<open>x \<in> (\<Union>x\<in>A. r `` x)\<close>
+      apply (rule UN_I)
+       apply (rule q2)
+      apply (rule c1)
+      apply (unfold image_def)
+      apply (rule CollectI)
+      apply (unfold range_def)
+    (*proof - 
+      show ?thesis by blast*)
+      sorry
+comments*)
+
+(*
+lemma
+  fixes f A B
+(*  assumes a:\<open>\<forall>y. Ind(y) \<longrightarrow> x \<in> y\<close> *)
+  assumes b:\<open>Ind(w)\<close> 
+  shows \<open>succ(x) \<in> w\<close>
+*)
+(* recursion theorem *)
+
+(*
+text\<open>Cantor's theorem revisited\<close>
+lemma cantor_surj: "f \<notin> surj(A,Pow(A))"
+  apply (unfold surj_def, safe)
+  apply (cut_tac cantor)
+  apply (best del: subsetI)
+  done
+*)
 
 end
