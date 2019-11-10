@@ -246,6 +246,9 @@ end
 (* lemma image_UN: "r `` (\<Union>x\<in>A. B(x)) = (\<Union>x\<in>A. r `` B(x))" *)
 
 lemma "r``(\<Union>A) = (\<Union>x\<in>A. r``x)"
+  by blast
+
+lemma "r``(\<Union>A) = (\<Union>x\<in>A. r``x)"
 proof (rule equalityI)
   have l1:\<open>\<And>x. x \<in> r `` (\<Union>A) \<Longrightarrow>
          x \<in> (\<Union>x\<in>A. r `` x)\<close>
@@ -273,10 +276,12 @@ next
     from a0 obtain B where \<open>B \<in> {r `` x . x \<in> A}\<close> and \<open>x \<in> B\<close> by standard
     (*! have \<open>B \<in> {r `` x . x \<in> A}\<close> apply standard sorry !*)
     from \<open>B \<in> {r `` x . x \<in> A}\<close> obtain g where \<open>B = r `` g\<close> and \<open>g \<in> A\<close> by standard
-
-    have \<open>x \<in> r `` (\<Union>A)\<close> 
-      apply standard
-    show \<open>x \<in> r `` (\<Union>A)\<close> sorry
+    from \<open>B = r `` g\<close> and \<open>x \<in> B\<close> have \<open>x \<in> r `` g\<close> by (rule subst)
+(*    have  \<open>x \<in> r `` g\<close> apply standard *)
+    from  \<open>x \<in> r `` g\<close> obtain aa where  "\<langle>aa, x\<rangle> \<in> r" and "aa \<in> g" by standard
+    from \<open>g \<in> A\<close> and \<open>aa \<in> g\<close> have \<open>aa \<in> \<Union>A\<close> by (rule UnionI)
+    from \<open>\<langle>aa, x\<rangle> \<in> r\<close> and \<open>aa \<in> \<Union>A\<close> show \<open>x \<in> r `` (\<Union>A)\<close> by standard
+    (*show \<open>x \<in> r `` (\<Union>A)\<close> sorry*)
   qed
   thus \<open>(\<Union>x\<in>A. r `` x) \<subseteq> r `` (\<Union>A)\<close> by (rule subsetI)
 qed
