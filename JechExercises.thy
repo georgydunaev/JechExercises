@@ -285,6 +285,11 @@ next
   qed
   thus \<open>(\<Union>x\<in>A. r `` x) \<subseteq> r `` (\<Union>A)\<close> by (rule subsetI)
 qed
+
+lemma Transset_trans_Memrel:
+    "\<forall>j\<in>i. Transset(j) ==> trans(Memrel(i))"
+  by (unfold Transset_def trans_def, blast)
+
 (* comments:
 (*
     from \<open>x \<in> \<Union>Pow(A)\<close> obtain B 
@@ -328,5 +333,68 @@ lemma cantor_surj: "f \<notin> surj(A,Pow(A))"
   apply (best del: subsetI)
   done
 *)
+
+
+axiomatization
+  myeq :: \<open>[i\<Rightarrow>o, i\<Rightarrow>o] \<Rightarrow> o\<close>  (infixl \<open>=C\<close> 50)
+where
+  myrefl: \<open>a =C a\<close> and
+  mysubst: \<open>a =C b \<Longrightarrow> P(a) \<Longrightarrow> P(b)\<close>
+
+(*
+axiomatization
+  eq :: \<open>['a, 'a] \<Rightarrow> o\<close>  (infixl \<open>=\<close> 50)
+where
+  refl: \<open>a = a\<close> and
+  subst: \<open>a = b \<Longrightarrow> P(a) \<Longrightarrow> P(b)\<close>
+*)
+(*
+lemma qu:
+  fixes C::\<open>i\<Rightarrow>o\<close>
+  shows \<open>(=)(C,C)\<close>
+*)
+(*"\<lbrakk>C 0;\<And>\<alpha>. \<alpha>\<in>C\<Longrightarrow>\<alpha>+1\<in>C \<rbrakk> \<Longrightarrow> C=Ord"*)
+  
+
+
+lemma transfinite_induction111 : "\<lbrakk>0\<in>C;\<And>\<alpha>. \<alpha>\<in>C\<Longrightarrow>\<alpha>+1\<in>C \<rbrakk> \<Longrightarrow> 0\<in>C"
+  apply assumption
+  done
+
+lemma transfinite_induction22 : "0\<in>C \<Longrightarrow> 0\<in>C"
+  apply assumption
+  done
+
+(* untyped lambda calculus *)
+
+(*definition
+  POS  :: "[i,[i,i]\<Rightarrow>o]=>o"  where
+    "POS(D,\<sqsubseteq>) == (\<forall>x\<in>D.\<sqsubseteq>(x,x))\<and>"*)
+
+context
+  fixes D::i
+  (*fixes \<sqsubseteq>::[i,i]\<Rightarrow>o*)
+  fixes otn::i ("\<sqsubseteq>")
+  assumes reflrel:\<open>\<forall>x\<in>D. <x,y>\<in>\<sqsubseteq>\<close>
+  assumes antisymrel:\<open>\<forall>x\<in>D. \<forall>y\<in>D. <x,y>\<in>\<sqsubseteq> \<and> <y,x>\<in>\<sqsubseteq> \<longrightarrow> x=y\<close>
+  assumes transrel:\<open>\<forall>x\<in>D.\<forall>y\<in>D.\<forall>z\<in>D. <x,y>\<in>\<sqsubseteq> \<and> <y,z>\<in>\<sqsubseteq> \<longrightarrow> <x,z>\<in>\<sqsubseteq>\<close>
+  (*assumes dpos:\<open>POS(D,\<sqsubseteq>)\<close>*)
+begin
+end
+
+definition
+  eqc  :: "[(i\<Rightarrow>o),(i\<Rightarrow>o)]=>o" where
+    "eqc(A,B) == \<forall>x. A(x) \<longleftrightarrow> B(x)"
+
+(* Transfinite induction. *)
+lemma transfinite_induction:
+  fixes C::"i\<Rightarrow>o"
+  assumes c0:\<open>C(0)\<close>
+  assumes cS:\<open>\<forall>x. C(x)\<longrightarrow>C(succ(x))\<close>
+  assumes cL:\<open>\<forall>x. C(x)\<longrightarrow>C(succ(x))\<close>
+assumes a:\<open>Ind(x)\<close>
+  shows \<open>eqc(C,Ord)\<close>
+
+  oops
 
 end
